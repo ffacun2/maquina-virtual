@@ -1,4 +1,5 @@
 #include "operaciones.h"
+#include "mv.h"
 
 void MOV(t_MV *maquina, t_operador *op1, t_operador *op2){
 }

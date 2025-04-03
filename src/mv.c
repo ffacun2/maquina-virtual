@@ -10,7 +10,9 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
     maquina->tabla_segmentos[CS].tamano = tamano;
     maquina->tabla_segmentos[DS].base = tamano;
     maquina->tabla_segmentos[DS].tamano = TAMANO_MEMORIA - tamano;
-    maquina->registros[IP] = maquina->tabla_segmentos[CS].base;
+    maquina->registros[CS] = 0x00000000;
+    maquina->registros[DS] = 0x00010000;
+    maquina->registros[IP] = maquina->memoria[CS];
 }
 
 /*
@@ -73,4 +75,53 @@ void valor_operacion (t_operador *op,t_MV mv) {
         default:
             break;
     }
+
 }
+
+/*
+    Obtiene el valor de la maquina virutal segun el tipo de operando de la operacion.
+    Si el tipo de operando/ sector de registro es invalido se muestra mensaje de error 
+    y devuelve valor -1.
+*/
+int getValor(t_operador op,t_MV maquina) {
+    int valor = 0;
+    switch (op.tipo) {
+        case REGISTRO:
+            // Extraer el sector del registro( EAX=00, AL=01, AH=10, AX=11)
+            char sectorReg = (op.valor & 0x000C) >> 2; 
+            char codigoReg = (op.valor & 0x00F0) >> 4; // Extraer el registro
+            switch (sectorReg) {
+                case 0: //EAX XXXX
+                    return maquina.registros[codigoReg]; 
+                case 1://AL 000X
+                    return maquina.registros[codigoReg] & 0x000F;
+                case 2://AH 00X0
+                    return maquina.registros[codigoReg] & 0x00F0;
+                case 3://AX 00XX
+                    return maquina.registros[codigoReg] & 0x00FF;
+                default:
+                    printf("Tipo de sector de registro invalido. [getValor()] EAX/AX/AL/AH");
+                    break;
+            }
+            break;
+        case INMEDIATO:
+            return op.valor;
+        case MEMORIA:
+            int dirLogic = op.valor;
+            char codigoReg = (op.valor >> 4) & 0x000F;
+            short int offset = (op.valor >> 8) & 0x00FF;
+            int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offset;
+            for (size_t i = 0; i < 4; i++) {
+                valor = valor << 8;
+                valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
+            }
+            return valor;
+        default:
+            printf("Tipo de operando invalido.[getValor()] Reg/Inm/Mem");
+            break;
+    }
+
+    return -1;
+}
+
+
