@@ -1,17 +1,7 @@
+#ifndef OPERACIONES_H_INCLUDED
+#define OPERACIONES_H_INCLUDED
+
 #include "mv.h"
-
-typedef enum {
-    NINGUNO = 0,
-    REGISTRO = 1,
-    INMEDIATO = 2,
-    MEMORIA = 3
-}t_operando;
-
-typedef struct {
-    int valor;
-    t_operando tipo;
-}t_operador;
-
 
 //Tipo array de funciones con ningun operando
 typedef void (*t_func0)(t_MV *);
@@ -50,3 +40,5 @@ void NOT (t_MV *maquina, t_operador *op1);
 
 //funciones sin operandos
 void STOP (t_MV *maquina);
+
+#endif // OPERACIONES_H

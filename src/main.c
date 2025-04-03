@@ -1,24 +1,25 @@
-#include "operadores.h"
-
+#include "operaciones.h"
 
 void lectura_archivo(char *nombre_archivo, t_MV *maquina);
-int verifico_header (char header[6]);
+int verifico_header (char *header);
 int verifico_tamano (char tamano);
 
 
 /*
-compilo el programa:
-gcc main.c -o main.exe 
+    compilo el programa:
+    gcc main.c -o main.exe 
 
-ejecuto el programa con el nombre de archivo traducido:
-main.exe sample.vmx
+    ejecuto el programa con el nombre de archivo traducido:
+    main.exe sample.vmx
 */
 int main(int argc, char **argv) {
     t_MV maquina;
 
     //Verifico que se haya ingresado el nombre del archivo
-    if (argc > 1 )
+    if (argc > 1 ){
         lectura_archivo(argv[1], &maquina);
+        ejecutar_maquina(&maquina);
+    }
     else {
         printf("No se ha ingresado el nombre del archivo\n");
         return 1;
@@ -28,9 +29,11 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-/* Hago lectura del archivo traducido, primero el header para verificar 
-identificador y version, y luego los datos que iran a la memoria de la 
-maquina virtual (data segment)*/
+/* 
+    Hago lectura del archivo traducido, primero el header para verificar 
+    identificador y version, y luego los datos que iran a la memoria de la 
+    maquina virtual (data segment)
+*/
 void lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     FILE *archivo = fopen(nombre_archivo, "rb");
     char header[7];
@@ -59,26 +62,28 @@ void lectura_archivo(char *nombre_archivo, t_MV *maquina) {
         if (verifico_tamano(tamano) == 0) {
             printf("El tamaño de datos es incorrecto, %d\n", tamano);
         } else {
-            // Si el tamaño es correcto, inicializo la máquina virtual
-            inicializar_maquina(maquina);
             // Leo los datos del archivo y los guardo en la memoria de la máquina virtual
-            fread(maquina->memoria, sizeof(char), tamano, archivo);
+            fread(maquina->memoria, 1, tamano, archivo);
+            // Si el tamaño es correcto, inicializo la máquina virtual
+            inicializar_maquina(maquina,tamano);
         }
-    }
-
-    
+    }    
     fclose(archivo);
 }
 
-/*Verifico que el header del archivo pasado por el traductor coincida con
-el identificador y version de la maquina virtual*/
+/*
+    Verifico que el header del archivo pasado por el traductor coincida con
+    el identificador y version de la maquina virtual
+*/
 int verifico_header (char *header) {
     // Verifico que el header sea correcto
     return (strncmp(header, IDENTIFICADOR,4) == 0 && header[5] == VERSION_MV);
 }
 
-/*Verifico que el tamaño de los datos leidos no sea mayor a el tamaño 
-de memoria de la maquina virtual*/
+/*
+    Verifico que el tamaño de los datos leidos no sea mayor a el tamaño 
+    de memoria de la maquina virtual
+*/
 int verifico_tamano (char tamano) {
     if (tamano < TAMANO_MEMORIA) {
         // El tamaño de datos es correcto

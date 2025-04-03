@@ -2,5 +2,8 @@
     "C_Cpp.autocompleteAddParentheses": true,
     "cmake.buildTask": true,
     "terminal.explorerKind": "external",
-    "terminal.integrated.accessibleViewFocusOnCommandExecution": true
+    "terminal.integrated.accessibleViewFocusOnCommandExecution": true,
+    "files.associations": {
+        "operaciones.h": "c"
+    }
 }

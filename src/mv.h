@@ -1,6 +1,11 @@
+
+#ifndef MV_H_INCLUDED
+#define MV_H_INCLUDED
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 #define CANT_REGISTROS 16
 #define TAMANO_MEMORIA 16384
@@ -10,10 +15,10 @@
 
 
 enum {
-    // Data Segment
-    DS = 0,
-    //Code Segment
-    CS = 1,
+    // Code Segment
+    CS = 0,
+    //Data Segment
+    DS = 1,
     //Instruction Pointer
     IP = 5,
     // condition code
@@ -40,6 +45,22 @@ typedef struct MV{
     t_tabla_segmento tabla_segmentos[CANT_SEGMENTOS];
 }t_MV;
 
+typedef enum {
+    NINGUNO = 0,
+    REGISTRO = 1,
+    INMEDIATO = 2,
+    MEMORIA = 3
+} t_operando;
+
+typedef struct {
+    int valor;
+    t_operando tipo;
+} t_operador;
+
+void inicializar_maquina(t_MV *MV,short int tamano);
+void ejecutar_maquina(t_MV *maquina);
+void ejecutar_instruccion(t_MV *maquina,char instruccion);
+void valor_operacion(t_operador *op,t_MV mv);
 
 
-void inicializar_maquina(t_MV *MV);
+#endif // MV_H_INCLUDED
