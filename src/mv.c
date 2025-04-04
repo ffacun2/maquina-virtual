@@ -107,7 +107,6 @@ int getValor(t_operador op,t_MV maquina) {
         case INMEDIATO:
             return op.valor;
         case MEMORIA:
-            int dirLogic = op.valor;
             char codigoReg = (op.valor >> 4) & 0x000F;
             short int offset = (op.valor >> 8) & 0x00FF;
             int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offset;
@@ -124,4 +123,44 @@ int getValor(t_operador op,t_MV maquina) {
     return -1;
 }
 
+
+void setValor(t_operador op,int valor,t_MV *maquina) {
+    switch (op.tipo) {
+    case MEMORIA:
+        char codReg = (op.valor >> 4) & 0x000F;
+        short int offset = (op.valor >> 8) & 0x00FF;
+        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x000000FF].base + offset;
+        
+        //if ( /*Verifico que no se produzca Overflow*/ )
+
+        for (int i = 0; i < 4; i++) {
+            maquina->memoria[dirFisic + i] = (valor >> ( (3 - i)*8)) & 0x000000FF;
+        }
+        
+        break;
+    case REGISTRO:
+        char sectorReg = (op.valor & 0x000C) >> 2;
+        char codigoReg = (op.valor & 0x00F0) >> 4;
+        switch (sectorReg) {
+            case 0: //EAX XXXX
+                maquina->registros[codigoReg] = valor; 
+                break;
+            case 1://AL 000X
+                maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x00F0) | (valor & 0x000F);
+                break;
+            case 2://AH 00X0
+                maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x000F) | (valor & 0x00F0);
+                break;
+            case 3://AX 00XX
+                maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x00FF) | (valor & 0x00FF);
+                break;
+            default:
+                printf("Tipo de sector de registro invalido. [setValor()] EAX/AX/AL/AH");
+                break;
+        }
+        break;
+    default:
+        break;
+    }
+}
 
