@@ -1,17 +1,20 @@
 #include "operaciones.h"
 #include "mv.h"
 #include <stdio.h>
+#include <string.h>
 /*
     Inicializa la máquina virtual, configurando los registros y la tabla de segmentos.
     Se establece el tamaño del segmento de datos y el segmento de código, así como la base
 */
 void inicializar_maquina (t_MV *maquina,short int tamano) {
-    maquina->tabla_segmentos[CS].base = 0;
-    maquina->tabla_segmentos[CS].tamano = tamano;
-    maquina->tabla_segmentos[DS].base = tamano;
-    maquina->tabla_segmentos[DS].tamano = TAMANO_MEMORIA - tamano;
+    // Inicializo primero la tabla de segmento o el registro?
+    //Esta bien inicializado la tabla de segmentos?
     maquina->registros[CS] = 0x00000000;
     maquina->registros[DS] = 0x00010000;
+    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FF].base = 0;
+    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FF].tamano = tamano;
+    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FF].base = tamano;
+    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FF].tamano = TAMANO_MEMORIA - tamano;
     maquina->registros[IP] = maquina->registros[CS];
 }
 
@@ -20,7 +23,9 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
     Se encarga de leer la instrucción actual de la memoria y ejecutarla.
 */
 void ejecutar_maquina (t_MV *maquina) {
-    printf("Ejecutando la máquina virtual...\n");
+    printf("Ejecutando la maquina virtual...\n");
+    short dirFisic = 0;
+    short offset = 0;
     while (maquina->registros[IP] < maquina->tabla_segmentos[CS].base + maquina->tabla_segmentos[CS].tamano) {
         // Leer la instrucción de la memoria
         char instruccion = maquina->memoria[maquina->tabla_segmentos[(maquina->registros[IP] >> 16) & 0x000000FF].base + (maquina->registros[IP] & 0x0000FFFF)];

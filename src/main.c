@@ -1,6 +1,6 @@
 #include "operaciones.h"
 
-void lectura_archivo(char *nombre_archivo, t_MV *maquina);
+int lectura_archivo(char *nombre_archivo, t_MV *maquina);
 int verifico_header (char *header);
 int verifico_tamano (char tamano);
 
@@ -14,11 +14,16 @@ int verifico_tamano (char tamano);
 */
 int main(int argc, char **argv) {
     t_MV maquina;
+    short flag_d = 0; // Flag para indicar si se debe mostrar el disassembler
 
     //Verifico que se haya ingresado el nombre del archivo
     if (argc > 1 ){
-        lectura_archivo(argv[1], &maquina);
-        ejecutar_maquina(&maquina);
+        if (lectura_archivo(argv[1], &maquina)){
+            if (argc > 2 && strcmp(argv[2], "-d") == 0) {
+                flag_d = 1; // Si se pasa el flag -d, se activa el disassembler
+            }
+            ejecutar_maquina(&maquina);
+        }
     }
     else {
         printf("No se ha ingresado el nombre del archivo\n");
@@ -34,24 +39,34 @@ int main(int argc, char **argv) {
     identificador y version, y luego los datos que iran a la memoria de la 
     maquina virtual (data segment)
 */
-void lectura_archivo(char *nombre_archivo, t_MV *maquina) {
+int lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     FILE *archivo = fopen(nombre_archivo, "rb");
     char header[7];
     char high, low;
-    short int tamano;
+    short tamano;
+    short lenNombreArchivo = strlen(nombre_archivo);
+    
+    // Verifico que el nombre del archivo tenga la extension .vmx
+    if( strcmp(nombre_archivo + lenNombreArchivo - 4, ".vmx") != 0) {
+        printf("El archivo no es un archivo vmx\n");
+        return 0;
+    }
 
+    // Verifico que el archivo se haya abierto correctamente
     if (archivo == NULL) {
         printf("Error al abrir el archivo\n");
-        return;
+        return 0;
     }
 
     // Leer el header del archivo
     fread(header, sizeof(char), 6, archivo);
     // Me aseguro de que sea una cadena
     header[6] = '\0'; 
-    
+     
+    // Verifico que el header sea correcto
     if (verifico_header(header) == 0) {
         printf("El header del archivo no es correcto, %s\n. El identificador o la version no son correctas.",header);
+        return 0;
     }
     else {
         //Si el header es correcto, leo tamaño de datos e inicializo la máquina virtual
@@ -69,6 +84,7 @@ void lectura_archivo(char *nombre_archivo, t_MV *maquina) {
         }
     }    
     fclose(archivo);
+    return 1;
 }
 
 /*
@@ -76,8 +92,7 @@ void lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     el identificador y version de la maquina virtual
 */
 int verifico_header (char *header) {
-    // Verifico que el header sea correcto
-    return (strncmp(header, IDENTIFICADOR,4) == 0 && header[5] == VERSION_MV);
+    return (strncmp(header, IDENTIFICADOR,5) == 0 && header[5] == VERSION_MV);
 }
 
 /*
