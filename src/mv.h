@@ -61,6 +61,8 @@ void inicializar_maquina(t_MV *MV,short int tamano);
 void ejecutar_maquina(t_MV *maquina);
 void ejecutar_instruccion(t_MV *maquina,char instruccion);
 void valor_operacion(t_operador *op,t_MV mv);
+int getValor(t_operador op,t_MV mv);
+void setValor(t_operador op,int valor,t_MV *maquina);
 
 
 #endif // MV_H_INCLUDED

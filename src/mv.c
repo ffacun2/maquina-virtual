@@ -12,7 +12,7 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
     maquina->tabla_segmentos[DS].tamano = TAMANO_MEMORIA - tamano;
     maquina->registros[CS] = 0x00000000;
     maquina->registros[DS] = 0x00010000;
-    maquina->registros[IP] = maquina->memoria[CS];
+    maquina->registros[IP] = maquina->registros[CS];
 }
 
 /*
@@ -20,9 +20,10 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
     Se encarga de leer la instrucción actual de la memoria y ejecutarla.
 */
 void ejecutar_maquina (t_MV *maquina) {
+    printf("Ejecutando la máquina virtual...\n");
     while (maquina->registros[IP] < maquina->tabla_segmentos[CS].base + maquina->tabla_segmentos[CS].tamano) {
         // Leer la instrucción de la memoria
-        int instruccion = maquina->memoria[maquina->tabla_segmentos[(maquina->registros[IP] >> 16) & 0x000000FF].base + (maquina->registros[IP] & 0x0000FFFF)];
+        char instruccion = maquina->memoria[maquina->tabla_segmentos[(maquina->registros[IP] >> 16) & 0x000000FF].base + (maquina->registros[IP] & 0x0000FFFF)];
         maquina->registros[IP]++;
         // Ejecutar la instrucción
         ejecutar_instruccion(maquina, instruccion);
@@ -46,9 +47,12 @@ void ejecutar_instruccion (t_MV *maquina,char instruccion){
     valor_operacion(&op1,*maquina); // Obtener el valor del operando 1
     maquina->registros[IP] += op1.tipo;
 
+    printf("Ejecutando instruccion: %02X\n", instruccion&0x0FF); // Debugging
+    printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
+    printf("IP: %06X\n",maquina->registros[IP]&0x0FF); // Debugging
+    
     //Aca iria el disassembler creo
     //disassembler(op1,op2,instruccion); mando op1 y op2 para los valores y tipo, y intruccion para la operacion
-    printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
 }
 
 /*
@@ -61,6 +65,7 @@ void valor_operacion (t_operador *op,t_MV mv) {
     short index = (mv.registros[IP] >> 16) & 0x000000FF; // Extraer el índice del segmento
     short offset = mv.registros[IP] & 0x0000FFFF; // Extraer el offset
     short dirFisic = mv.tabla_segmentos[index].base + offset; // Calcular la dirección física
+    op->valor = 0; // Inicializar el valor del operando a 0
     switch (op->tipo) {
         case MEMORIA:
             op->valor = mv.memoria[dirFisic] & 0x0FF;
@@ -70,15 +75,17 @@ void valor_operacion (t_operador *op,t_MV mv) {
             op->valor |= mv.memoria[dirFisic + 2] & 0x0FF;
             break;
         case INMEDIATO:
-            op->valor = mv.memoria[dirFisic + offset] & 0x0FF;
+            op->valor = mv.memoria[dirFisic] & 0x0FF;
             op->valor <<= 8;
             op->valor |= mv.memoria[dirFisic + 1] & 0x0FF;
             break;
         case REGISTRO:
-            op->valor = mv.memoria[dirFisic + offset] & 0x0FF;
+            op->valor = mv.memoria[dirFisic] & 0x0FF;
+            break;
+        case NINGUNO:
             break;
         default:
-            printf("Tipo de operando invalido. [valor_operacion()] Reg/Inm/Mem");
+            printf("Tipo de operando invalido. [valor_operacion()] Reg/Inm/Mem\n");
             break;
     }
 
@@ -92,10 +99,10 @@ void valor_operacion (t_operador *op,t_MV mv) {
 int getValor(t_operador op,t_MV maquina) {
     int valor = 0;
     switch (op.tipo) {
-        case REGISTRO:
+        case REGISTRO:{
             // Extraer el sector del registro( EAX=00, AL=01, AH=10, AX=11)
-            char sectorReg = (op.valor & 0x000C) >> 2; 
-            char codigoReg = (op.valor & 0x00F0) >> 4; // Extraer el registro
+            short sectorReg = (op.valor & 0x000C) >> 2; 
+            short codigoReg = (op.valor & 0x00F0) >> 4; // Extraer el registro
             switch (sectorReg) {
                 case 0: //EAX XXXX
                     return maquina.registros[codigoReg]; 
@@ -106,14 +113,15 @@ int getValor(t_operador op,t_MV maquina) {
                 case 3://AX 00XX
                     return maquina.registros[codigoReg] & 0x00FF;
                 default:
-                    printf("Tipo de sector de registro invalido. [getValor()] EAX/AX/AL/AH");
+                    printf("Tipo de sector de registro invalido. [getValor()] EAX/AX/AL/AH\n");
                     break;
             }
+        }
             break;
         case INMEDIATO:
             return op.valor;
-        case MEMORIA:
-            char codigoReg = (op.valor >> 4) & 0x000F;
+        case MEMORIA:{
+            short codigoReg = (op.valor >> 4) & 0x000F;
             short int offset = (op.valor >> 8) & 0x00FF;
             int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offset;
             for (int i = 0; i < 4; i++) {
@@ -121,8 +129,11 @@ int getValor(t_operador op,t_MV maquina) {
                 valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
             }
             return valor;
+        }
+        case NINGUNO:
+            return 0;
         default:
-            printf("Tipo de operando invalido.[getValor()] Reg/Inm/Mem");
+            printf("Tipo de operando invalido.[getValor()] Reg/Inm/Mem\n");
             break;
     }
 
@@ -132,8 +143,8 @@ int getValor(t_operador op,t_MV maquina) {
 
 void setValor(t_operador op,int valor,t_MV *maquina) {
     switch (op.tipo) {
-    case MEMORIA:
-        char codReg = (op.valor >> 4) & 0x000F;
+    case MEMORIA:{
+        short codReg = (op.valor >> 4) & 0x000F;
         short int offset = (op.valor >> 8) & 0x00FF;
         int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x000000FF].base + offset;
         
@@ -142,11 +153,11 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
         for (int i = 0; i < 4; i++) {
             maquina->memoria[dirFisic + i] = (valor >> ( (3 - i)*8)) & 0x000000FF;
         }
-        
+    }
         break;
-    case REGISTRO:
-        char sectorReg = (op.valor & 0x000C) >> 2;
-        char codigoReg = (op.valor & 0x00F0) >> 4;
+    case REGISTRO:{
+        short sectorReg = (op.valor & 0x000C) >> 2;
+        short codigoReg = (op.valor & 0x00F0) >> 4;
         switch (sectorReg) {
             case 0: //EAX XXXX
                 maquina->registros[codigoReg] = valor; 
@@ -161,9 +172,12 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
                 maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x00FF) | (valor & 0x00FF);
                 break;
             default:
-                printf("Tipo de sector de registro invalido. [setValor()] EAX/AX/AL/AH");
+                printf("Tipo de sector de registro invalido. [setValor()] EAX/AX/AL/AH\n");
                 break;
         }
+    }
+        break;
+    case NINGUNO:
         break;
     default:
         break;
