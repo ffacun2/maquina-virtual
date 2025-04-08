@@ -7,7 +7,7 @@ int verifico_tamano (char tamano);
 
 /*
     compilo el programa:
-    gcc main.c -o main.exe 
+    gcc main.c mv.c operaciones.c -o main.exe 
 
     ejecuto el programa con el nombre de archivo traducido:
     main.exe sample.vmx

@@ -22,7 +22,7 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
 void ejecutar_maquina (t_MV *maquina) {
     while (maquina->registros[IP] < maquina->tabla_segmentos[CS].base + maquina->tabla_segmentos[CS].tamano) {
         // Leer la instrucción de la memoria
-        int instruccion = maquina->memoria[maquina->registros[IP]];
+        int instruccion = maquina->memoria[maquina->tabla_segmentos[(maquina->registros[IP] >> 16) & 0x000000FF].base + (maquina->registros[IP] & 0x0000FFFF)];
         maquina->registros[IP]++;
         // Ejecutar la instrucción
         ejecutar_instruccion(maquina, instruccion);
@@ -46,33 +46,39 @@ void ejecutar_instruccion (t_MV *maquina,char instruccion){
     valor_operacion(&op1,*maquina); // Obtener el valor del operando 1
     maquina->registros[IP] += op1.tipo;
 
+    //Aca iria el disassembler creo
+    //disassembler(op1,op2,instruccion); mando op1 y op2 para los valores y tipo, y intruccion para la operacion
     printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
 }
 
 /*
-    Leo el valor del operando de acuerdo a su tipo.
+    Leo el valor del operando de acuerdo a su tipo en el code segment.
     Memoria -> 3 bytes
     Inmediato -> 2 bytes
     Registro -> 1 byte
 */
 void valor_operacion (t_operador *op,t_MV mv) {
+    short index = (mv.registros[IP] >> 16) & 0x000000FF; // Extraer el índice del segmento
+    short offset = mv.registros[IP] & 0x0000FFFF; // Extraer el offset
+    short dirFisic = mv.tabla_segmentos[index].base + offset; // Calcular la dirección física
     switch (op->tipo) {
         case MEMORIA:
-            op->valor = mv.memoria[mv.registros[IP]] & 0x0FF;
+            op->valor = mv.memoria[dirFisic] & 0x0FF;
             op->valor <<= 8;
-            op->valor |= mv.memoria[mv.registros[IP] + 1] & 0x0FF;
+            op->valor |= mv.memoria[dirFisic + 1] & 0x0FF;
             op->valor <<= 8;
-            op->valor |= mv.memoria[mv.registros[IP] + 2] & 0x0FF;
+            op->valor |= mv.memoria[dirFisic + 2] & 0x0FF;
             break;
         case INMEDIATO:
-            op->valor = mv.memoria[mv.registros[IP]] & 0x0FF;
+            op->valor = mv.memoria[dirFisic + offset] & 0x0FF;
             op->valor <<= 8;
-            op->valor |= mv.memoria[mv.registros[IP] + 1] & 0x0FF;
+            op->valor |= mv.memoria[dirFisic + 1] & 0x0FF;
             break;
         case REGISTRO:
-            op->valor = mv.memoria[mv.registros[IP]] & 0x0FF;
+            op->valor = mv.memoria[dirFisic + offset] & 0x0FF;
             break;
         default:
+            printf("Tipo de operando invalido. [valor_operacion()] Reg/Inm/Mem");
             break;
     }
 
@@ -110,7 +116,7 @@ int getValor(t_operador op,t_MV maquina) {
             char codigoReg = (op.valor >> 4) & 0x000F;
             short int offset = (op.valor >> 8) & 0x00FF;
             int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offset;
-            for (size_t i = 0; i < 4; i++) {
+            for (int i = 0; i < 4; i++) {
                 valor = valor << 8;
                 valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
             }
