@@ -12,6 +12,7 @@ void ADD(t_MV *maquina, t_operador op1, t_operador op2) {
     int a = getValor(op2,*maquina);
     setValor(op1,b+a,maquina);
     printf("Resultado: %d\n", b + a);
+    CMP(maquina, op1, op2);
 }
 void SUB(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SUB...\n");
@@ -19,6 +20,7 @@ void SUB(t_MV *maquina, t_operador op1, t_operador op2){
     int a = getValor(op2, *maquina);
     setValor(op1, b - a, maquina);
     printf("Resultado: %d\n", b - a);
+    CMP(maquina, op1, op2);
 }
 void SWAP(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SWAP...\n");
@@ -33,6 +35,7 @@ void MUL(t_MV *maquina, t_operador op1, t_operador op2){
     int a = getValor(op2, *maquina);
     setValor(op1, b*a, maquina);
     printf("Resultado: %d\n", b*a);
+    CMP(maquina, op1, op2);
 }
 void DIV(t_MV *maquina, t_operador op1, t_operador op2){   
     printf("Ejecutando DIV...\n");
@@ -40,7 +43,9 @@ void DIV(t_MV *maquina, t_operador op1, t_operador op2){
     int a = getValor(op2, *maquina);
     if(a != 0){
      setValor(op1, b/a, maquina);
-     printf("Resultado: %d\n", b/a); 
+     maquina->registros[AC] = b % a;  //resto   
+     printf("Resultado: cosciente %d resto %d\n", b/a, b % a); 
+     CMP(maquina, op1, op2);
     }
     else
      printf("error divisor no pude ser cero\n");
@@ -48,9 +53,23 @@ void DIV(t_MV *maquina, t_operador op1, t_operador op2){
 }
 void CMP(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando CMP...\n");
+    int b = getValor(op1, *maquina);
+    int a = getValor(op2, *maquina);
+    int resto = b - a;
+
+    maquina->registros[CC]=0; //reseteo CC
+    
+    if(resto == 0)
+        maquina->registros[CC] |= 1 << 0;
+    else{
+        if(resto < 0)
+         maquina->registros[CC] |= 1 << 1;
+    }
+    printf("Resultado de la comparación: %d (CC = %d)\n", resultado, maquina->registros[CC]);
 }
 void SHL(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SHL...\n");
+    
 }
 void SHR(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SHR...\n");
