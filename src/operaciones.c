@@ -1,7 +1,9 @@
 #include "operaciones.h"
 #include "mv.h"
+#include <time.h>
+#include <stdlib.h>
 
-void FuncionCC(t_MV *maquina, int resultado){
+void FuncionCC(t_MV *maquina, int resultado){ //actualiza CC
     maquina->registros[CC]=0; //reseteo CC
     
     if(resultado == 0)
@@ -76,9 +78,7 @@ void SHL(t_MV *maquina, t_operador op1, t_operador op2){
     int resultado = b << a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d\n", resultado);
-    
-    
+    printf("Resultado: %d\n", resultado);    
 }
 void SHR(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SHR...\n");
@@ -125,6 +125,18 @@ void LDH(t_MV *maquina, t_operador op1, t_operador op2){
 }
 void RND(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando RND...\n");
+    
+    int a = getValor(op2, *maquina);
+  
+    static int iniciado = 0;
+    if (!iniciado) {
+      srand(time(NULL)); // Inicializar el generador de números aleatorios solo una vez
+      iniciado = 1;}
+    
+    int resultado = rand() % (a + 1); 
+    setValor(op1, resultado, maquina); 
+    printf("Resultado: %d\n", resultado);
+    
 }
 
 void SYS(t_MV *maquina, t_operador op1){
@@ -153,6 +165,14 @@ void JNN(t_MV *maquina, t_operador op1){
 }
 void NOT(t_MV *maquina, t_operador op1){
     printf("Ejecutando NOT...\n");
+
+    int b = getValor(op1, *maquina);
+    int resultado = ~b; // negación bit a bit
+
+    setValor(op1, resultado, maquina);
+    FuncionCC(maquina, resultado);
+    printf("Resultado: %d (0x%X)\n", resultado, resultado);
+
 }
 
 void STOP(t_MV *maquina){
