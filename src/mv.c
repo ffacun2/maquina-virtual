@@ -48,17 +48,18 @@ void ejecutar_instruccion (t_MV *maquina,char instruccion){
 
     op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
     op1.tipo = (instruccion >> 4) & 0x03; // Extraer el tipo de operando 1
-
+        
     valor_operacion(&op2,*maquina); // Obtener el valor del operando 2
     maquina->registros[IP] += op2.tipo;
 
     valor_operacion(&op1,*maquina); // Obtener el valor del operando 1
     maquina->registros[IP] += op1.tipo;
-
+    
     printf("Ejecutando instruccion: %02X\n", instruccion&0x0FF); // Debugging
     printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
     printf("IP: %06X\n",maquina->registros[IP]&0x0FF); // Debugging
     
+
 }
 
 /*
@@ -129,9 +130,9 @@ int getValor(t_operador op,t_MV maquina) {
             return op.valor;
         case MEMORIA:{
             short codigoReg = (op.valor >> 4) & 0x000F;
-            short offsetReg = maquina.registros[codigoReg] & 0x00FF;
-            short int offset = (op.valor >> 8) & 0x00FF;
-            int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offsetReg + offset;
+            short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
+            short int offset = (op.valor >> 8) & 0x0FFFF;
+            int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
             for (int i = 0; i < 4; i++) {
                 valor = valor << 8;
                 valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
@@ -148,20 +149,25 @@ int getValor(t_operador op,t_MV maquina) {
     return -1;
 }
 
-
+/*
+    Establece el valor de un operando en la máquina virtual según su tipo.
+    Dependiendo del tipo de operando (MEMORIA, REGISTRO), se actualiza el valor
+    en la memoria o en los registros correspondientes.
+*/
 void setValor(t_operador op,int valor,t_MV *maquina) {
     switch (op.tipo) {
     case MEMORIA:{
         short codReg = (op.valor >> 4) & 0x000F;
-        short offsetReg = maquina->memoria[codReg] & 0x00FF;
-        short int offset = (op.valor >> 8) & 0x00FF;
-        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x000000FF].base + offsetReg + offset;
+        short offsetReg = maquina->memoria[codReg] & 0x0FFFF;
+        short int offset = (op.valor >> 8) & 0x0FFFF;
+        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
         
-        //if ( /*Verifico que no se produzca Overflow*/ )
-
-        for (int i = 0; i < 4; i++) {
-            maquina->memoria[dirFisic + i] = (valor >> ( (3 - i)*8)) & 0x000000FF;
-        }
+        if ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
+            error(maquina, 3); // Error: Overflow de memoria
+        else 
+            for (int i = 0; i < 4; i++) {
+                maquina->memoria[dirFisic + i] = (valor >> ( (3 - i)*8)) & 0x000000FF;
+            }
     }
         break;
     case REGISTRO:{
@@ -186,10 +192,27 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
         }
     }
         break;
-    case NINGUNO:
-        break;
     default:
         break;
     }
 }
 
+/*
+    Maneja los errores que pueden ocurrir durante la ejecución de la máquina virtual.
+    Dependiendo del código de error, se muestra un mensaje específico y se ajusta el registro IP
+    al final del codigo del code segment para finalizarlo.
+*/
+void error(t_MV *mv, int errorCode) {
+    switch (errorCode) {
+        case 1:
+            printf("Error: Operacion no valida.\n");
+        break;
+        case 2:
+            printf("Error: Division por cero.\n");
+        break;
+        case 3:
+            printf("Error: Overflow.\n");
+        break;
+    }
+    mv->registros[IP] = (mv->registros[IP] & 0xF0000) + mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
+}
