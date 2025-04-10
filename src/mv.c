@@ -7,14 +7,12 @@
     Se establece el tamaño del segmento de datos y el segmento de código, así como la base
 */
 void inicializar_maquina (t_MV *maquina,short int tamano) {
-    // Inicializo primero la tabla de segmento o el registro?
-    //Esta bien inicializado la tabla de segmentos?
     maquina->registros[CS] = 0x00000000;
     maquina->registros[DS] = 0x00010000;
-    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FF].base = 0;
-    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FF].tamano = tamano;
-    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FF].base = tamano;
-    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FF].tamano = TAMANO_MEMORIA - tamano;
+    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].base = 0;
+    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano = tamano;
+    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].base = tamano;
+    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].tamano = TAMANO_MEMORIA - tamano;
     maquina->registros[IP] = maquina->registros[CS];
 }
 
@@ -24,15 +22,20 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
 */
 void ejecutar_maquina (t_MV *maquina) {
     printf("Ejecutando la maquina virtual...\n");
-    short dirFisic = 0;
-    short offset = 0;
-    while (maquina->registros[IP] < maquina->tabla_segmentos[CS].base + maquina->tabla_segmentos[CS].tamano) {
+    short index = (maquina->registros[IP] >> 16) & 0x0FFFF; // Extraer el índice del segmento
+    short offset = maquina->registros[IP] & 0x0FFFF; // Extraer el offset
+    short dirFisic = maquina->tabla_segmentos[index].base + offset; // Calcular la dirección física
+
+    while ( dirFisic <  maquina->tabla_segmentos[CS].tamano) {
         // Leer la instrucción de la memoria
-        char instruccion = maquina->memoria[maquina->tabla_segmentos[(maquina->registros[IP] >> 16) & 0x000000FF].base + (maquina->registros[IP] & 0x0000FFFF)];
+        char instruccion = maquina->memoria[dirFisic];
         maquina->registros[IP]++;
+
         // Ejecutar la instrucción
         ejecutar_instruccion(maquina, instruccion);
-        
+
+        offset = maquina->registros[IP] & 0x0FFFF; 
+        dirFisic = maquina->tabla_segmentos[index].base + offset;
     }
 }
 
@@ -56,8 +59,6 @@ void ejecutar_instruccion (t_MV *maquina,char instruccion){
     printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
     printf("IP: %06X\n",maquina->registros[IP]&0x0FF); // Debugging
     
-    //Aca iria el disassembler creo
-    //disassembler(op1,op2,instruccion); mando op1 y op2 para los valores y tipo, y intruccion para la operacion
 }
 
 /*
@@ -65,6 +66,7 @@ void ejecutar_instruccion (t_MV *maquina,char instruccion){
     Memoria -> 3 bytes
     Inmediato -> 2 bytes
     Registro -> 1 byte
+    Todo esto es parte del archivo leido, es del code segment.
 */
 void valor_operacion (t_operador *op,t_MV mv) {
     short index = (mv.registros[IP] >> 16) & 0x000000FF; // Extraer el índice del segmento
@@ -127,8 +129,9 @@ int getValor(t_operador op,t_MV maquina) {
             return op.valor;
         case MEMORIA:{
             short codigoReg = (op.valor >> 4) & 0x000F;
+            short offsetReg = maquina.registros[codigoReg] & 0x00FF;
             short int offset = (op.valor >> 8) & 0x00FF;
-            int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offset;
+            int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x000000FF].base + offsetReg + offset;
             for (int i = 0; i < 4; i++) {
                 valor = valor << 8;
                 valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
@@ -150,8 +153,9 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
     switch (op.tipo) {
     case MEMORIA:{
         short codReg = (op.valor >> 4) & 0x000F;
+        short offsetReg = maquina->memoria[codReg] & 0x00FF;
         short int offset = (op.valor >> 8) & 0x00FF;
-        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x000000FF].base + offset;
+        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x000000FF].base + offsetReg + offset;
         
         //if ( /*Verifico que no se produzca Overflow*/ )
 
