@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 */
 int lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     FILE *archivo = fopen(nombre_archivo, "rb");
-    char header[7];
+    char header[9];
     char high, low;
     short tamano;
     short lenNombreArchivo = strlen(nombre_archivo);
@@ -59,9 +59,9 @@ int lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     }
 
     // Leer el header del archivo
-    fread(header, sizeof(char), 6, archivo);
+    fread(header, sizeof(char), 8, archivo);
     // Me aseguro de que sea una cadena
-    header[6] = '\0'; 
+    header[8] = '\0'; 
      
     // Verifico que el header sea correcto
     if (verifico_header(header) == 0) {
@@ -70,10 +70,10 @@ int lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     }
     else {
         //Si el header es correcto, leo tamaño de datos e inicializo la máquina virtual
-        fread(&high, sizeof(char), 1, archivo);
-        fread(&low, sizeof(char), 1, archivo);
-        tamano = (short int) ((high << 8) | low); // Leo el tamaño de datos
-        
+        high = header[6]; // Leo el byte alto del tamaño de datos
+        low = header[7]; // Leo el byte bajo del tamaño de datos
+        tamano = (short int) ((high << 8) | low); // armo el tamaño de datos
+  
         if (verifico_tamano(tamano) == 0) {
             printf("El tamaño de datos es incorrecto, %d\n", tamano);
         } else {
@@ -92,7 +92,13 @@ int lectura_archivo(char *nombre_archivo, t_MV *maquina) {
     el identificador y version de la maquina virtual
 */
 int verifico_header (char *header) {
-    return (strncmp(header, IDENTIFICADOR,5) == 0 && header[5] == VERSION_MV);
+    char identificador[6];
+    short version = header[5];
+
+    strncpy(identificador,header,5);
+    identificador[5] = '\0'; 
+
+    return (strncmp(identificador, IDENTIFICADOR,5) == 0 && version == VERSION_MV);
 }
 
 /*
