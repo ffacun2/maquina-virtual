@@ -1,6 +1,12 @@
 #include "operaciones.h"
 #include "mv.h"
 
+
+//A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
+//nos permite detectar los valores negativos.
+//Con int no pasa.
+//Hay valores negativos en inmediatos y offset 
+
 void MOV(t_MV *maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando MOV...\n");
     int b = getValor(op2,*maquina);
@@ -65,7 +71,7 @@ void CMP(t_MV *maquina, t_operador op1, t_operador op2){
         if(resto < 0)
          maquina->registros[CC] |= 1 << 1;
     }
-    printf("Resultado de la comparación: %d (CC = %d)\n", resultado, maquina->registros[CC]);
+    // printf("Resultado de la comparación: %d (CC = %d)\n", resultado, maquina->registros[CC]);
 }
 void SHL(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SHL...\n");

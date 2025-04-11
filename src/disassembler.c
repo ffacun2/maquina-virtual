@@ -121,7 +121,7 @@ void imprimir_operador(t_operador operador) {
             printf("%d", (short) operador.valor );
             break;
         case MEMORIA:
-            printf("[%s + %d]", indentificarRegistro((operador.valor >> 4)&0x0F),(operador.valor >> 8)&0x0FFFF);
+            printf("[%s + %d]", indentificarRegistro((operador.valor >> 4)&0x0F),(short)(operador.valor >> 8)&0x0FFFF);
             break;
         default:
             break;

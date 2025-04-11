@@ -98,8 +98,8 @@ void valor_operacion (t_operador *op,t_MV mv) {
     Si el tipo de operando/ sector de registro es invalido se muestra mensaje de error 
     y devuelve valor -1.
 */
-int getValor(t_operador op,t_MV maquina) {
-    int valor = 0;
+short getValor(t_operador op,t_MV maquina) {
+    short valor = 0;
     switch (op.tipo) {
         case REGISTRO:{
             // Extraer el sector del registro( EAX=00, AL=01, AH=10, AX=11)
@@ -125,11 +125,17 @@ int getValor(t_operador op,t_MV maquina) {
         case MEMORIA:{
             short codigoReg = (op.valor >> 4) & 0x000F;
             short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
-            short int offset = (op.valor >> 8) & 0x0FFFF;
+            short offset = (op.valor >> 8) & 0x0FFFF;
             int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
-            for (int i = 0; i < TAM_CELDA; i++) {
-                valor = valor << 8;
-                valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
+
+            if (dirFisic < maquina.tabla_segmentos[(maquina.registros[CS] >> 16) & 0x0FFFF].base 
+                || (dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[CS] >> 16) & 0x0FFFF].tamano)
+                error(&maquina, 3); // Error: Overflow de memoria
+            else {
+                for (int i = 0; i < TAM_CELDA; i++) {
+                    valor = valor << 8;
+                    valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
+                }
             }
             return valor;
         }
@@ -153,10 +159,11 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
     case MEMORIA:{
         short codReg = (op.valor >> 4) & 0x000F;
         short offsetReg = maquina->memoria[codReg] & 0x0FFFF;
-        short int offset = (op.valor >> 8) & 0x0FFFF;
+        short offset = (op.valor >> 8) & 0x0FFFF;
         int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
         
-        if ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
+        if (dirFisic < maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].base 
+            || (dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
             error(maquina, 3); // Error: Overflow de memoria
         else 
             for (int i = 0; i < TAM_CELDA; i++) {
