@@ -61,15 +61,27 @@ char *identificarMnemonico(int codigo){
     }
 }
 
-void escribirDisassembler(t_MV maquina, short tamano)
-{
-    char *mnemonicos = {NULL};
-    int tamOpA, tamOpB, pc = 0, codMnemonic, instruccion;
-    while (pc < tamano)
-    {
-        instruccion = maquina.memoria[pc];
-        codMnemonic = instruccion & 0x1F;
-        tamOpA = (instruccion >> 4) & 3;
-        tamOpB = (instruccion >> 6) & 3;
+void imprime_byte (int valor, int cant_byte){
+    for (int i = 0; i < cant_byte; i++) {
+        printf("%02X ", (valor >> (8 * (cant_byte - i - 1))) & 0xFF);
     }
+}
+
+void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
+    char op_ant = 0;
+    char *op1, *op2;
+
+    for (int i = 0; i < tamano; i++) {
+        printf("[%04X] %02X ", op_ant, instrucciones[i].opcode&0x0FF); 
+        imprime_byte(instrucciones[i].op2.valor, instrucciones[i].op2.tipo);
+        imprime_byte(instrucciones[i].op1.valor, instrucciones[i].op1.tipo);
+        for (int j = 0; j < (6-instrucciones[i].op1.tipo-instrucciones[i].op2.tipo); j++) {
+            printf("  ");
+        }
+        printf("\t| %s",identificarMnemonico(instrucciones[i].opcode&0x01F));
+        printf("\n");
+        op_ant += instrucciones[i].op1.tipo + instrucciones[i].op2.tipo + 1;
+    }
+    
+
 }

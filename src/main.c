@@ -1,4 +1,5 @@
 #include "operaciones.h"
+#include "disassembler.h"
 
 int lectura_archivo(char *nombre_archivo, t_MV *maquina);
 int verifico_header (char *header);
@@ -24,7 +25,7 @@ int main(int argc, char **argv) {
             genero_array_instrucciones(&maquina, &instrucciones, &instruccion_size);
             if (argc > 2 && strcmp(argv[2], "-d") == 0) {
                 flag_d = 1; // Si se pasa el flag -d, se activa el disassembler
-                //disassembler(instrucciones, instrucciones_size);
+                escribirDisassembler(instrucciones, instruccion_size);
             }
             ejecutar_maquina(&maquina, instrucciones, instruccion_size); // Ejecutar la máquina virtual
             free(instrucciones);

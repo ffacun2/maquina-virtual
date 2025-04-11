@@ -24,11 +24,8 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
 */
 void ejecutar_maquina (t_MV *maquina,t_instruccion *instrucciones,int instruccion_size) {
     printf("Ejecutando la maquina virtual...\n");
-    char op_ant = 0;
 
     for (int i = 0; i < instruccion_size; i++) {
-        printf("[%04X]: opcode: %s, op1: %6X, op2: %6x\n", op_ant,identificarMnemonico(instrucciones[i].opcode), instrucciones[i].op1.valor, instrucciones[i].op2.valor);
-        op_ant += instrucciones[i].op1.tipo + instrucciones[i].op2.tipo + 1;
         // operaciones(instruccion[i].opcode)(mv, instrucciones[i].op1, instrucciones[i].op2);
     }
 }
@@ -240,7 +237,7 @@ void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *in
             char instruccion = mv->memoria[dirFisic];
             mv->registros[IP]++;
             
-            (*instrucciones)[*instruccion_size].opcode = instruccion & 0x01F; // Guardar el opcode en la instrucción actual
+            (*instrucciones)[*instruccion_size].opcode = instruccion&0x0FF; // Guardar el opcode en la instrucción actual
             // Ejecutar la instrucción
             (*instrucciones)[*instruccion_size].op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
             (*instrucciones)[*instruccion_size].op1.tipo = (instruccion >> 4) & 0x03; // Extraer el tipo de operando 1
