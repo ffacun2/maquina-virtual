@@ -1,4 +1,5 @@
 #include "operaciones.h"
+#include "disassembler.h"
 
 int lectura_archivo(char *nombre_archivo, t_MV *maquina);
 int verifico_header (char *header);
@@ -15,14 +16,19 @@ int verifico_tamano (char tamano);
 int main(int argc, char **argv) {
     t_MV maquina;
     short flag_d = 0; // Flag para indicar si se debe mostrar el disassembler
+    t_instruccion *instrucciones;
+    int instruccion_size = 0;
 
     //Verifico que se haya ingresado el nombre del archivo
     if (argc > 1 ){
         if (lectura_archivo(argv[1], &maquina)){
+            genero_array_instrucciones(&maquina, &instrucciones, &instruccion_size);
             if (argc > 2 && strcmp(argv[2], "-d") == 0) {
                 flag_d = 1; // Si se pasa el flag -d, se activa el disassembler
+                escribirDisassembler(instrucciones, instruccion_size);
             }
-            ejecutar_maquina(&maquina);
+            ejecutar_maquina(&maquina, instrucciones, instruccion_size); // Ejecutar la máquina virtual
+            free(instrucciones);
         }
     }
     else {
@@ -33,6 +39,7 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
 
 /* 
     Hago lectura del archivo traducido, primero el header para verificar 
