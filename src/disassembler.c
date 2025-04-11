@@ -61,6 +61,35 @@ char *identificarMnemonico(int codigo){
     }
 }
 
+char *indentificarRegistro(int codigo) {
+    switch (codigo) {
+        case 0:
+            return "CS";
+        case 1:
+            return "DS";
+        case 5:
+            return "IP";
+        case 8:
+            return "CC";
+        case 9:
+            return "AC";
+        case 10:
+            return "EAX";
+        case 11:
+            return "EBX";
+        case 12:
+            return "ECX";
+        case 13:
+            return "EDX";
+        case 14:
+            return "EEX";
+        case 15:
+            return "EFX";
+        default:
+            return "Registro no identificado";
+    }
+}
+
 void imprime_byte (int valor, int cant_byte){
     for (int i = 0; i < cant_byte; i++) {
         printf("%02X ", (valor >> (8 * (cant_byte - i - 1))) & 0xFF);
@@ -69,14 +98,30 @@ void imprime_byte (int valor, int cant_byte){
 
 void imprimir_operador(t_operador operador) {
     switch (operador.tipo) {
-        case REGISTRO:
-            printf("REG", operador.valor & 0x0FF);
+        case REGISTRO: {
+            switch ((operador.valor >> 2) & 0x03) {
+                case 0:
+                    printf("%s", indentificarRegistro((operador.valor >> 4)&0x0F));
+                break;
+                case 1:
+                    printf("%cL", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                break;
+                case 2:
+                    printf("%cH", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                break;
+                case 3:
+                    printf("%cX", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                break;
+                default:
+                break;
+            }
+        }
             break;
         case INMEDIATO:
-            printf(" %d ", operador.valor );
+            printf(" %d ", (signed) operador.valor );
             break;
         case MEMORIA:
-            printf("MEM ", operador.valor & 0x0FF);
+            printf(" [%s + %d] ", indentificarRegistro((operador.valor >> 4)&0x0F),(operador.valor >> 8)&0x0FFFF);
             break;
         default:
             break;
