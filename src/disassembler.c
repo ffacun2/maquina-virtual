@@ -54,7 +54,7 @@ char *identificarMnemonico(int codigo){
     case 0x1D:
         return "LDH";
     case 0x1E:
-        return "RND"
+        return "RND";
 
     default:
         return "Mnemonico no identificado";
@@ -63,7 +63,7 @@ char *identificarMnemonico(int codigo){
 
 void escribirDisassembler(t_MV maquina, short tamano)
 {
-    char *mnemonicos = {};
+    char *mnemonicos = {NULL};
     int tamOpA, tamOpB, pc = 0, codMnemonic, instruccion;
     while (pc < tamano)
     {
