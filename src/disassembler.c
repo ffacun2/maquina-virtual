@@ -67,6 +67,22 @@ void imprime_byte (int valor, int cant_byte){
     }
 }
 
+void imprimir_operador(t_operador operador) {
+    switch (operador.tipo) {
+        case REGISTRO:
+            printf("REG", operador.valor & 0x0FF);
+            break;
+        case INMEDIATO:
+            printf(" %d ", operador.valor );
+            break;
+        case MEMORIA:
+            printf("MEM ", operador.valor & 0x0FF);
+            break;
+        default:
+            break;
+    }
+}
+
 void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
     char op_ant = 0;
     char *op1, *op2;
@@ -75,10 +91,14 @@ void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
         printf("[%04X] %02X ", op_ant, instrucciones[i].opcode&0x0FF); 
         imprime_byte(instrucciones[i].op2.valor, instrucciones[i].op2.tipo);
         imprime_byte(instrucciones[i].op1.valor, instrucciones[i].op1.tipo);
-        for (int j = 0; j < (6-instrucciones[i].op1.tipo-instrucciones[i].op2.tipo); j++) {
+        for (int j = 0; j < (7-instrucciones[i].op1.tipo-instrucciones[i].op2.tipo); j++) {
             printf("  ");
         }
-        printf("\t| %s",identificarMnemonico(instrucciones[i].opcode&0x01F));
+        printf("\t| %s ",identificarMnemonico(instrucciones[i].opcode&0x01F));
+        imprimir_operador(instrucciones[i].op1);
+        if (instrucciones[i].op1.tipo != NINGUNO)
+            printf(",");
+        imprimir_operador(instrucciones[i].op2);
         printf("\n");
         op_ant += instrucciones[i].op1.tipo + instrucciones[i].op2.tipo + 1;
     }
