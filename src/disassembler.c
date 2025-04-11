@@ -118,19 +118,18 @@ void imprimir_operador(t_operador operador) {
         }
             break;
         case INMEDIATO:
-            printf(" %d ", (signed) operador.valor );
+            printf("%d", (short) operador.valor );
             break;
         case MEMORIA:
-            printf(" [%s + %d] ", indentificarRegistro((operador.valor >> 4)&0x0F),(operador.valor >> 8)&0x0FFFF);
+            printf("[%s + %d]", indentificarRegistro((operador.valor >> 4)&0x0F),(operador.valor >> 8)&0x0FFFF);
             break;
         default:
             break;
     }
 }
-
+//revisar valores negativosss 
 void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
     char op_ant = 0;
-    char *op1, *op2;
 
     for (int i = 0; i < tamano; i++) {
         printf("[%04X] %02X ", op_ant, instrucciones[i].opcode&0x0FF); 
@@ -142,7 +141,7 @@ void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
         printf("\t| %s ",identificarMnemonico(instrucciones[i].opcode&0x01F));
         imprimir_operador(instrucciones[i].op1);
         if (instrucciones[i].op1.tipo != NINGUNO)
-            printf(",");
+            printf(", ");
         imprimir_operador(instrucciones[i].op2);
         printf("\n");
         op_ant += instrucciones[i].op1.tipo + instrucciones[i].op2.tipo + 1;
