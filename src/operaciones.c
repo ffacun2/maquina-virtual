@@ -139,12 +139,12 @@ void XOR(t_MV *maquina, t_operador op1, t_operador op2)
 void LDL(t_MV *maquina, t_operador op1, t_operador op2)
 {
     printf("Ejecutando LDL...\n");
-    setValor(op1, getValor(op1, *maquina) | (getValor(op2, *maquina) & 0xFF), maquina);
+    cargaBaja(op1, getValor(op2, *maquina), maquina);
 }
 void LDH(t_MV *maquina, t_operador op1, t_operador op2)
 {
     printf("Ejecutando LDH...\n");
-    setValor(op1, getValor(op1, *maquina) | (getValor(op2, *maquina) << 8), maquina);
+    cargaAlta(op1, getValor(op2, *maquina), maquina);
 }
 void RND(t_MV *maquina, t_operador op1, t_operador op2)
 {
