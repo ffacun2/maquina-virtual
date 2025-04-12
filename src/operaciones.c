@@ -212,8 +212,27 @@ void SYS(t_MV *maquina, t_operador op1)
         }
 
         break;
-    case 2: // Modo escritura
-        printf(maquina->memoria[maquina->registros[D]]);
+    case 2:                                   // Modo escritura
+        switch (maquina->registros[A] & 0xFF) // AL
+        {
+        case 1: // Escribir en decimal
+            printf("%d", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 2: // Escribir caracter
+            printf("%c", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 4: // Escribir en octal
+            printf("%o", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 8: // Escribir en hexadecimal
+            printf("%x", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 16: // Escribir en binario
+            break;
+
+        default:
+            break;
+        }
         break;
 
     default:
