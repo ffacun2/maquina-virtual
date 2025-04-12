@@ -229,8 +229,15 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            for (int i = 0; i < CL * CH; i++)
+            for (int j = 0; j < CL; j++)
+            {
+                /* code */
+            }
+
+            for (int i = 0; i < CL; i++)
+            {
                 printf("[%X]: %d\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
+            }
             break;
         case 2: // Escribir caracter
             for (int i = 0; i < CL * CH; i++)
