@@ -226,18 +226,20 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            printf("%d", &maquina->memoria[maquina->registros[D]]);
+            printf("%d", maquina->memoria[maquina->registros[D]]);
             break;
         case 2: // Escribir caracter
-            printf("%c", &maquina->memoria[maquina->registros[D]]);
+            printf("%c", maquina->memoria[maquina->registros[D]]);
             break;
         case 4: // Escribir en octal
-            printf("%o", &maquina->memoria[maquina->registros[D]]);
+            printf("%o", maquina->memoria[maquina->registros[D]]);
             break;
         case 8: // Escribir en hexadecimal
-            printf("%x", &maquina->memoria[maquina->registros[D]]);
+            printf("%x", maquina->memoria[maquina->registros[D]]);
             break;
         case 16: // Escribir en binario
+            deIntABinarioString(maquina->memoria[maquina->registros[D]], bin);
+            printf("%s", bin);
             break;
 
         default:
