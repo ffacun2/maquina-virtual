@@ -3,7 +3,7 @@
 // Un splitter es un dipositivo que recibe un bus y separa el dato ingresados
 // Entrada: es el bus que recibe
 // Salidas: vector que agrupa los 1 y 0 separados
-// Tamanio: tamaño de las celdas de Salidas
+// Tamanio: tamaño de las celdas de Salidas (medido en BITS)
 
 typedef struct
 {
