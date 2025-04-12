@@ -69,7 +69,7 @@ void CMP(t_MV *maquina, t_operador op1, t_operador op2){
     int a = getValor(op2, *maquina);
     int resto = b - a;
     FuncionCC(maquina, resto);
-    printf("Resultado de la comparación: %d (CC = %d)\n", resultado, maquina->registros[CC]);
+    printf("Resultado de la comparación: %d (CC = %d)\n", resto maquina->registros[CC]);
 }
 void SHL(t_MV *maquina, t_operador op1, t_operador op2){
     printf("Ejecutando SHL...\n");
