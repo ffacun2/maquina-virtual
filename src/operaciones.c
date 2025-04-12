@@ -198,9 +198,10 @@ void SYS(t_MV *maquina, t_operador op1)
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, x;
-    t_splitter splitter;
+    t_splitter splitter1, splitter2;
     printf("Ejecutando SYS...\n");
-    setEntrada(&splitter, maquina->registros[A] & 0xFF);
+    splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
+    setEntrada(&splitter1, maquina->registros[A] & 0xFF);
     switch (op1.valor)
     {
     case 1: // Modo lectura
