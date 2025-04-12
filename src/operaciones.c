@@ -197,7 +197,8 @@ void SYS(t_MV *maquina, t_operador op1)
     printf("Ejecutando SYS...\n");
     switch (op1.valor)
     {
-    case 1:                                   // Modo lectura
+    case 1: // Modo lectura
+        printf("[%X]: ", maquina->registros[D]);
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Leer en decimal
@@ -226,20 +227,20 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            printf("%d", maquina->memoria[maquina->registros[D]]);
+            printf("[%X]: %d\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
             break;
         case 2: // Escribir caracter
-            printf("%c", maquina->memoria[maquina->registros[D]]);
+            printf("[%X]: %c\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
             break;
         case 4: // Escribir en octal
-            printf("0o%o", maquina->memoria[maquina->registros[D]]);
+            printf("[%X]: 0o%o\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
             break;
         case 8: // Escribir en hexadecimal
-            printf("0x%x", maquina->memoria[maquina->registros[D]]);
+            printf("[%X]: 0x%x\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
             break;
         case 16: // Escribir en binario
             deIntABinarioString(maquina->memoria[maquina->registros[D]], bin);
-            printf("0b%s", bin);
+            printf("[%X]: 0b%s\n", maquina->registros[D], bin);
             break;
 
         default:
