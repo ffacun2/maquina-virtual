@@ -229,14 +229,14 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            for (int j = 0; j < CL; j++)
-            {
-                /* code */
-            }
-
             for (int i = 0; i < CL; i++)
             {
-                printf("[%X]: %d\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
+                printf("[%X]: ", maquina->registros[D]);
+                for (int j = 0; j < CH; j++)
+                {
+                    /* code */
+                }
+                printf("[%X]: %d\n" + i, maquina->memoria[maquina->registros[D] + i]);
             }
             break;
         case 2: // Escribir caracter
@@ -269,75 +269,75 @@ void SYS(t_MV *maquina, t_operador op1)
         break;
     }
 }
-void Salto(t_MV *maquina, t_operador op1){ //FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
+void Salto(t_MV *maquina, t_operador op1)
+{                                                    // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
     int direccionLogica = getValor(op1, *maquina);   // El valor del operando es la dirección lógica a la que queremos saltar
     short offset = direccionLogica & 0xFFFF;         // Extraer offset (los 16 bits bajos)
     short tam = maquina->tabla_segmentos[CS].tamano; // Verificar que esté dentro del segmento de código
     if (offset >= tam)
-      printf("Error: salto fuera de los límites del código\n");
-    else{
-      maquina->registros[IP] = direccionLogica;
-      printf("Salto a dirección lógica: 0x%08X\n", direccionLogica);
+        printf("Error: salto fuera de los límites del código\n");
+    else
+    {
+        maquina->registros[IP] = direccionLogica;
+        printf("Salto a dirección lógica: 0x%08X\n", direccionLogica);
     }
-} 
+}
 void JMP(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JMP...\n");
     if (op1.tipo != INMEDIATO && op1.tipo != MEMORIA)
         printf("Error: JMP solo admite inmediatos o direcciones lógicas (tipo MEMORIA)\n");
     else
-       Salto(maquina, op1);
+        Salto(maquina, op1);
 }
 void JZ(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JZ...\n");
-    
-    if (maquina->registros[CC] & (1 << 0)) 
+
+    if (maquina->registros[CC] & (1 << 0))
         Salto(maquina, op1);
-    else 
+    else
         printf("No se cumple la condición para el salto\n");
-    
 }
 void JP(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JP...\n");
-    if (!(maquina->registros[CC] & (1 << 1))) 
+    if (!(maquina->registros[CC] & (1 << 1)))
         Salto(maquina, op1);
-    else 
+    else
         printf("No se cumple la condición para el salto\n");
 }
 void JN(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JN...\n");     
-    if (maquina->registros[CC] & (1 << 1))) 
+    printf("Ejecutando JN...\n");
+    if (maquina->registros[CC] & (1 << 1))
         Salto(maquina, op1);
-    else 
-        printf("No se cumple la condición para el salto\n");   
+    else
+        printf("No se cumple la condición para el salto\n");
 }
 void JNZ(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JNZ...\n");
-    if (!(maquina->registros[CC] & (1 << 0))) 
+    if (!(maquina->registros[CC] & (1 << 0)))
         Salto(maquina, op1);
-    else 
-        printf("No se cumple la condición para el salto\n");   
+    else
+        printf("No se cumple la condición para el salto\n");
 }
 void JNP(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JNP...\n");
-    if ((maquina->registros[CC] & (1 << 1)) || (maquina->registros[CC] & (1 << 0))) 
+    if ((maquina->registros[CC] & (1 << 1)) || (maquina->registros[CC] & (1 << 0)))
         Salto(maquina, op1);
-    else 
-        printf("No se cumple la condición para el salto\n");   
+    else
+        printf("No se cumple la condición para el salto\n");
 }
 void JNN(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JNN...\n");
-    if (!(maquina->registros[CC] & (1 << 1))) 
+    if (!(maquina->registros[CC] & (1 << 1)))
         Salto(maquina, op1);
-    else 
-        printf("No se cumple la condición para el salto\n"); 
-    
+    else
+        printf("No se cumple la condición para el salto\n");
 }
 void NOT(t_MV *maquina, t_operador op1)
 {
