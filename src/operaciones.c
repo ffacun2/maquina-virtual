@@ -231,12 +231,10 @@ void SYS(t_MV *maquina, t_operador op1)
         case 1: // Escribir en decimal
             for (int i = 0; i < CL; i++)
             {
-                printf("[%X]: ", maquina->registros[D]);
+                printf("[%X]: ", maquina->registros[D] + i * CH);
                 for (int j = 0; j < CH; j++)
-                {
-                    /* code */
-                }
-                printf("[%X]: %d\n" + i, maquina->memoria[maquina->registros[D] + i]);
+                    printf("%d", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                printf("\n");
             }
             break;
         case 2: // Escribir caracter
