@@ -278,9 +278,13 @@ void SYS(t_MV *maquina, t_operador op1)
             for (i = 0; i < CL; i++)
             {
                 printf("[%4X]: ", maquina->registros[D] + i * CH);
+                x = 0;
                 for (j = 0; j < CH; j++)
-                    printf("%d", maquina->memoria[maquina->registros[D] + i * CH + j]);
-                printf("\n");
+                {
+                    x = x << 8;
+                    x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                }
+                printf("%d\n", x);
             }
             break;
         case 2: // Escribir caracter
