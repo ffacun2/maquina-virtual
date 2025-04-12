@@ -196,14 +196,26 @@ void SYS(t_MV *maquina, t_operador op1)
     char bin[33];
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
+    int i, j, x;
     printf("Ejecutando SYS...\n");
     switch (op1.valor)
     {
     case 1: // Modo lectura
-        printf("[%X]: ", maquina->registros[D]);
+
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Leer en decimal
+            for (i = 0; i < CL; i++)
+            {
+                printf("[%X]: ", maquina->registros[D] + i * CH);
+                scanf("%d", &x);
+                for (j = CH - 1; j >= 0; j--)
+                {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
+
             scanf("%d", &maquina->memoria[maquina->registros[D]]);
             break;
         case 2: // Leer caracter
@@ -229,46 +241,46 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            for (int i = 0; i < CL; i++)
+            for (i = 0; i < CL; i++)
             {
                 printf("[%X]: ", maquina->registros[D] + i * CH);
-                for (int j = 0; j < CH; j++)
+                for (j = 0; j < CH; j++)
                     printf("%d", maquina->memoria[maquina->registros[D] + i * CH + j]);
                 printf("\n");
             }
             break;
         case 2: // Escribir caracter
-            for (int i = 0; i < CL; i++)
+            for (i = 0; i < CL; i++)
             {
                 printf("[%X]: ", maquina->registros[D] + i * CH);
-                for (int j = 0; j < CH; j++)
+                for (j = 0; j < CH; j++)
                     printf("%c", maquina->memoria[maquina->registros[D] + i * CH + j]);
                 printf("\n");
             }
             break;
         case 4: // Escribir en octal
-            for (int i = 0; i < CL; i++)
+            for (i = 0; i < CL; i++)
             {
                 printf("[%X]: ", maquina->registros[D] + i * CH);
-                for (int j = 0; j < CH; j++)
+                for (j = 0; j < CH; j++)
                     printf("0o%o", maquina->memoria[maquina->registros[D] + i * CH + j]);
                 printf("\n");
             }
             break;
         case 8: // Escribir en hexadecimal
-            for (int i = 0; i < CL; i++)
+            for (i = 0; i < CL; i++)
             {
                 printf("[%X]: ", maquina->registros[D] + i * CH);
-                for (int j = 0; j < CH; j++)
+                for (j = 0; j < CH; j++)
                     printf("0x%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
                 printf("\n");
             }
             break;
         case 16: // Escribir en binario
-            for (int i = 0; i < CL; i++)
+            for (i = 0; i < CL; i++)
             {
                 printf("[%X]: ", maquina->registros[D] + i * CH);
-                for (int j = 0; j < CH; j++)
+                for (j = 0; j < CH; j++)
                 {
                     deIntABinarioString(maquina->memoria[maquina->registros[D] + i * CH + j], bin);
                     printf("0b%s", bin);
