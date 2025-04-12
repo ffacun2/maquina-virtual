@@ -354,4 +354,5 @@ void NOT(t_MV *maquina, t_operador op1)
 void STOP(t_MV *maquina)
 {
     printf("Ejecutando STOP...\n");
+    exit(0);
 }
