@@ -21,6 +21,10 @@ void FuncionCC(t_MV *maquina, int resultado)
     }
 }
 
+int deBinarioStringAInt(char bin[])
+{
+}
+
 void MOV(t_MV *maquina, t_operador op1, t_operador op2)
 {
     printf("Ejecutando MOV...\n");
