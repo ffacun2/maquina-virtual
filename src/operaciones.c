@@ -68,7 +68,7 @@ void SWAP(t_MV *maquina, t_operador op1, t_operador op2)
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     setValor(op1, a, maquina);
-    setValor(op1, b, maquina);
+    setValor(op2, b, maquina);
 }
 void MUL(t_MV *maquina, t_operador op1, t_operador op2)
 {
