@@ -23,6 +23,19 @@ void FuncionCC(t_MV *maquina, int resultado)
 
 int deBinarioStringAInt(char bin[])
 {
+    int exponente = 0;
+    int resultado = 0;
+    for (int i = strlen(bin) - 1; i >= 0; i--)
+    {
+        if (bin[i] != '0' && bin[i] != '1')
+        {
+            printf("ERROR: se pidio un numero binario y se ingreso cualquier cosa");
+            break;
+        }
+        resultado += (bin[i] & 0xF) * pow(2, exponente);
+        exponente++;
+    }
+    return resultado;
 }
 
 void MOV(t_MV *maquina, t_operador op1, t_operador op2)
@@ -191,6 +204,7 @@ void SYS(t_MV *maquina, t_operador op1)
             break;
         case 16: // Leer en binario
             scanf("%s", bin);
+            maquina->memoria[maquina->registros[D]] = deBinarioStringAInt(bin);
             break;
 
         default:
