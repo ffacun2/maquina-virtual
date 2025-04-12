@@ -2,6 +2,7 @@
 #include "mv.h"
 #include <time.h>
 #include <stdlib.h>
+#include "splitter.h"
 
 // A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
 // nos permite detectar los valores negativos.
@@ -197,7 +198,9 @@ void SYS(t_MV *maquina, t_operador op1)
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, x;
+    t_splitter splitter;
     printf("Ejecutando SYS...\n");
+    setEntrada(&splitter, maquina->registros[A] & 0xFF);
     switch (op1.valor)
     {
     case 1: // Modo lectura
