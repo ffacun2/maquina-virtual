@@ -27,34 +27,20 @@ void ejecutar_maquina (t_MV *maquina,t_instruccion *instrucciones,int instruccio
 
     for (int i = 0; i < instruccion_size; i++) {
         // operaciones(instruccion[i].opcode)(mv, instrucciones[i].op1, instrucciones[i].op2);
+        if (instrucciones[i].op1.tipo == NINGUNO && instrucciones[i].op2.tipo == NINGUNO) {
+            //instruccion con 0 operandos
+        } else {
+            if (instrucciones[i].op1.tipo == NINGUNO) {
+                //instrucicon con 1 operando
+            }
+            else {
+                MOV(maquina,instrucciones[i].op1,instrucciones[i].op2); //Ejemplo de instruccion con 2 operandos
+                //instruccion con 2 operandos
+            }
+        }
     }
 }
 
-/*
-    Lee la instrucción actual de la memoria y ejecuta la operación correspondiente.
-    Dependiendo del opcode, se determina el tipo de operación a realizar.
-    
-    SIN USARRRRR -> eliminar ???????
-
-*/
-void ejecutar_instruccion (t_MV *maquina,char instruccion) {
-    t_operador op1, op2;
-
-    op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
-    op1.tipo = (instruccion >> 4) & 0x03; // Extraer el tipo de operando 1
-        
-    valor_operacion(&op2,*maquina); // Obtener el valor del operando 2
-    maquina->registros[IP] += op2.tipo;
-
-    valor_operacion(&op1,*maquina); // Obtener el valor del operando 1
-    maquina->registros[IP] += op1.tipo;
-    
-    printf("Ejecutando instruccion: %02X\n", instruccion&0x0FF); // Debugging
-    printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
-    printf("IP: %06X\n",maquina->registros[IP]&0x0FF); // Debugging
-    
-
-}
 
 /*
     Leo el valor del operando de acuerdo a su tipo en el code segment.
@@ -98,7 +84,7 @@ void valor_operacion (t_operador *op,t_MV mv) {
     Si el tipo de operando/ sector de registro es invalido se muestra mensaje de error 
     y devuelve valor -1.
 */
-short getValor(t_operador op,t_MV maquina) {
+int getValor(t_operador op,t_MV maquina) {
     short valor = 0;
     switch (op.tipo) {
         case REGISTRO:{
