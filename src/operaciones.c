@@ -3,24 +3,23 @@
 #include <time.h>
 #include <stdlib.h>
 
+// A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
+// nos permite detectar los valores negativos.
+// Con int no pasa.
+// Hay valores negativos en inmediatos y offset
 
-//A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
-//nos permite detectar los valores negativos.
-//Con int no pasa.
-//Hay valores negativos en inmediatos y offset 
+void FuncionCC(t_MV *maquina, int resultado)
+{                               // actualiza CC
+    maquina->registros[CC] = 0; // reseteo CC
 
-
-void FuncionCC(t_MV *maquina, int resultado){ //actualiza CC
-    maquina->registros[CC]=0; //reseteo CC
-    
-    if(resultado == 0)
+    if (resultado == 0)
         maquina->registros[CC] |= 1 << 0;
-    else{
-        if(resultado < 0)
-         maquina->registros[CC] |= 1 << 1;
+    else
+    {
+        if (resultado < 0)
+            maquina->registros[CC] |= 1 << 1;
     }
 }
-
 
 void MOV(t_MV *maquina, t_operador op1, t_operador op2)
 {
@@ -59,8 +58,8 @@ void MUL(t_MV *maquina, t_operador op1, t_operador op2)
     printf("Ejecutando MUL...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
-    setValor(op1, b*a, maquina);
-    printf("Resultado: %d\n", b*a);
+    setValor(op1, b * a, maquina);
+    printf("Resultado: %d\n", b * a);
     FuncionCC(maquina, b * a);
 }
 void DIV(t_MV *maquina, t_operador op1, t_operador op2)
@@ -68,11 +67,12 @@ void DIV(t_MV *maquina, t_operador op1, t_operador op2)
     printf("Ejecutando DIV...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
-    if(a != 0){
-     setValor(op1, b/a, maquina);
-     maquina->registros[AC] = b % a;  //resto   
-     printf("Resultado: cosciente %d resto %d\n", b/a, b % a); 
-     FuncionCC(maquina, b / a);
+    if (a != 0)
+    {
+        setValor(op1, b / a, maquina);
+        maquina->registros[AC] = b % a; // resto
+        printf("Resultado: cosciente %d resto %d\n", b / a, b % a);
+        FuncionCC(maquina, b / a);
     }
     else
         printf("error divisor no pude ser cero\n");
@@ -94,7 +94,7 @@ void SHL(t_MV *maquina, t_operador op1, t_operador op2)
     int resultado = b << a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d\n", resultado);    
+    printf("Resultado: %d\n", resultado);
 }
 void SHR(t_MV *maquina, t_operador op1, t_operador op2)
 {
@@ -115,7 +115,6 @@ void AND(t_MV *maquina, t_operador op1, t_operador op2)
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
-    
 }
 void OR(t_MV *maquina, t_operador op1, t_operador op2)
 {
@@ -140,6 +139,7 @@ void XOR(t_MV *maquina, t_operador op1, t_operador op2)
 void LDL(t_MV *maquina, t_operador op1, t_operador op2)
 {
     printf("Ejecutando LDL...\n");
+    setValor(op1, op2.valor & 0xFF, maquina);
 }
 void LDH(t_MV *maquina, t_operador op1, t_operador op2)
 {
@@ -148,18 +148,19 @@ void LDH(t_MV *maquina, t_operador op1, t_operador op2)
 void RND(t_MV *maquina, t_operador op1, t_operador op2)
 {
     printf("Ejecutando RND...\n");
-    
+
     int a = getValor(op2, *maquina);
-  
+
     static int iniciado = 0;
-    if (!iniciado) {
-      srand(time(NULL)); // Inicializar el generador de números aleatorios solo una vez
-      iniciado = 1;}
-    
-    int resultado = rand() % (a + 1); 
-    setValor(op1, resultado, maquina); 
+    if (!iniciado)
+    {
+        srand(time(NULL)); // Inicializar el generador de números aleatorios solo una vez
+        iniciado = 1;
+    }
+
+    int resultado = rand() % (a + 1);
+    setValor(op1, resultado, maquina);
     printf("Resultado: %d\n", resultado);
-    
 }
 
 void SYS(t_MV *maquina, t_operador op1)
@@ -204,7 +205,6 @@ void NOT(t_MV *maquina, t_operador op1)
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
-
 }
 
 void STOP(t_MV *maquina)
