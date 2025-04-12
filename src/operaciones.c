@@ -166,11 +166,33 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
+    char bin[33];
     printf("Ejecutando SYS...\n");
     switch (op1.valor)
     {
-    case 1: // Modo lectura
-        scanf(&maquina->memoria[maquina->registros[D]]);
+    case 1:                                   // Modo lectura
+        switch (maquina->registros[A] & 0xFF) // AL
+        {
+        case 1: // Leer en decimal
+            scanf("%d", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 2: // Leer caracter
+            scanf("%c", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 4: // Leer en octal
+            scanf("%o", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 8: // Leer en hexadecimal
+            scanf("%x", &maquina->memoria[maquina->registros[D]]);
+            break;
+        case 16: // Leer en binario
+            scanf("%s", bin);
+            break;
+
+        default:
+            break;
+        }
+
         break;
     case 2: // Modo escritura
         printf(maquina->memoria[maquina->registros[D]]);
