@@ -167,6 +167,19 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 void SYS(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando SYS...\n");
+    switch (op1.valor)
+    {
+    case 1: // Modo lectura
+        scanf(&maquina->memoria[maquina->registros[D]]);
+        break;
+    case 2: // Modo escritura
+        printf(maquina->memoria[maquina->registros[D]]);
+        break;
+
+    default:
+        printf("ERROR: llamada a sistema operativo invalida");
+        break;
+    }
 }
 void JMP(t_MV *maquina, t_operador op1)
 {
