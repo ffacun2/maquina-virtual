@@ -206,18 +206,21 @@ void SYS(t_MV *maquina, t_operador op1)
 void JMP(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JMP...\n");
-    if (op1.tipo != INMEDIATO && op1.tipo != MEMORIA) 
+    if (op1.tipo != INMEDIATO && op1.tipo != MEMORIA)
         printf("Error: JMP solo admite inmediatos o direcciones lógicas (tipo MEMORIA)\n");
-    else{
-        int direccionLogica = getValor(op1, *maquina);    // El valor del operando es la dirección lógica a la que queremos saltar
-        short offset = direccionLogica & 0xFFFF;            // Extraer offset (los 16 bits bajos)
+    else
+    {
+        int direccionLogica = getValor(op1, *maquina);   // El valor del operando es la dirección lógica a la que queremos saltar
+        short offset = direccionLogica & 0xFFFF;         // Extraer offset (los 16 bits bajos)
         short tam = maquina->tabla_segmentos[CS].tamano; // Verificar que esté dentro del segmento de código
-        if (offset >= tam) 
-          printf("Error: salto fuera de los límites del código\n");
-       else{
-          maquina->registros[IP] = direccionLogica;
-          printf("Salto a dirección lógica: 0x%08X\n", direccionLogica);
-       }
+        if (offset >= tam)
+            printf("Error: salto fuera de los límites del código\n");
+        else
+        {
+            maquina->registros[IP] = direccionLogica;
+            printf("Salto a dirección lógica: 0x%08X\n", direccionLogica);
+        }
+    }
 }
 void JZ(t_MV *maquina, t_operador op1)
 {
@@ -238,8 +241,6 @@ void JNZ(t_MV *maquina, t_operador op1)
 void JNP(t_MV *maquina, t_operador op1)
 {
     printf("Ejecutando JNP...\n");
-    
-   
 }
 void JNN(t_MV *maquina, t_operador op1)
 {
