@@ -13,6 +13,7 @@ typedef void (*t_func2)(t_MV *, t_operador op1, t_operador op2);
 // Funciones auxiliares
 void FuncionCC(t_MV *maquina, int resultado);
 int deBinarioStringAInt(char bin[]);
+void deIntABinarioString(int nro, char bin[]);
 
 // funciones con 2 operandos
 void MOV(t_MV *maquina, t_operador op1, t_operador op2);
