@@ -1,92 +1,53 @@
 #include "disassembler.h"
 
-char *identificarMnemonico(int codigo){
-    switch (codigo)
-    {
-    case 0:
-        return "SYS";
-    case 1:
-        return "JMP";
-    case 2:
-        return "JZ";
-    case 3:
-        return "JP";
-    case 4:
-        return "JN";
-    case 5:
-        return "JNZ";
-    case 6:
-        return "JNP";
-    case 7:
-        return "JNN";
-    case 8:
-        return "NOT";
+char *identificarMnemonico(int codigo) {
+    switch (codigo) {
+    case 0: return "SYS";
+    case 1: return "JMP";
+    case 2: return "JZ";
+    case 3: return "JP";
+    case 4: return "JN";
+    case 5: return "JNZ";
+    case 6: return "JNP";
+    case 7: return "JNN";
+    case 8: return "NOT";
 
-    case 0xF:
-        return "STOP";
+    case 0xF: return "STOP";
 
-    case 0x10:
-        return "MOV";
-    case 0x11:
-        return "ADD";
-    case 0x12:
-        return "SUB";
-    case 0x13:
-        return "SWAP";
-    case 0x14:
-        return "MUL";
-    case 0x15:
-        return "DIV";
-    case 0x16:
-        return "CMP";
-    case 0x17:
-        return "SHL";
-    case 0x18:
-        return "SHR";
-    case 0x19:
-        return "AND";
-    case 0x1A:
-        return "OR";
-    case 0x1B:
-        return "XOR";
-    case 0x1C:
-        return "LDL";
-    case 0x1D:
-        return "LDH";
-    case 0x1E:
-        return "RND";
+    case 0x10: return "MOV";
+    case 0x11: return "ADD";
+    case 0x12: return "SUB";
+    case 0x13: return "SWAP";
+    case 0x14: return "MUL";
+    case 0x15: return "DIV";
+    case 0x16: return "CMP";
+    case 0x17: return "SHL";
+    case 0x18: return "SHR";
+    case 0x19: return "AND";
+    case 0x1A: return "OR";
+    case 0x1B: return "XOR";
+    case 0x1C: return "LDL";
+    case 0x1D: return "LDH";
+    case 0x1E: return "RND";
 
-    default:
-        return "Mnemonico no identificado";
+    default: return "Mnemonico no identificado";
     }
 }
 
 char *indentificarRegistro(int codigo) {
     switch (codigo) {
-        case 0:
-            return "CS";
-        case 1:
-            return "DS";
-        case 5:
-            return "IP";
-        case 8:
-            return "CC";
-        case 9:
-            return "AC";
-        case 10:
-            return "EAX";
-        case 11:
-            return "EBX";
-        case 12:
-            return "ECX";
-        case 13:
-            return "EDX";
-        case 14:
-            return "EEX";
-        case 15:
-            return "EFX";
-        default:
-            return "Registro no identificado";
+        case 0: return "CS";
+        case 1: return "DS";
+        case 5: return "IP";
+        case 8: return "CC";
+        case 9: return "AC";
+        case 10: return "EAX";
+        case 11: return "EBX";
+        case 12: return "ECX";
+        case 13: return "EDX";
+        case 14: return "EEX";
+        case 15: return "EFX";
+        default: return "Registro no identificado";
     }
 }
 
@@ -120,8 +81,17 @@ void imprimir_operador(t_operador operador) {
         case INMEDIATO:
             printf("%d", (short) operador.valor );
             break;
-        case MEMORIA:
-            printf("[%s + %d]", indentificarRegistro((operador.valor >> 4)&0x0F),(operador.valor >> 8)&0x0FFFF);
+        case MEMORIA: {
+            short valor = (operador.valor >> 8) & 0x0FFFF;
+            if (valor > 0)
+                printf("[%s + %d]", indentificarRegistro((operador.valor >> 4) & 0x0F), valor);
+            else
+                if (valor == 0)
+                    printf("[%s]", indentificarRegistro((operador.valor >> 4) & 0x0F));
+                else
+                    printf("[%s%d]", indentificarRegistro((operador.valor >> 4) & 0x0F), valor);
+                    
+            }
             break;
         default:
             break;

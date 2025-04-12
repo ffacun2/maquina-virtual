@@ -4,6 +4,12 @@
 #include <stdlib.h>
 
 
+//A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
+//nos permite detectar los valores negativos.
+//Con int no pasa.
+//Hay valores negativos en inmediatos y offset 
+
+
 void FuncionCC(t_MV *maquina, int resultado){ //actualiza CC
     maquina->registros[CC]=0; //reseteo CC
     

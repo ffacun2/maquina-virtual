@@ -27,34 +27,20 @@ void ejecutar_maquina (t_MV *maquina,t_instruccion *instrucciones,int instruccio
 
     for (int i = 0; i < instruccion_size; i++) {
         // operaciones(instruccion[i].opcode)(mv, instrucciones[i].op1, instrucciones[i].op2);
+        if (instrucciones[i].op1.tipo == NINGUNO && instrucciones[i].op2.tipo == NINGUNO) {
+            //instruccion con 0 operandos
+        } else {
+            if (instrucciones[i].op1.tipo == NINGUNO) {
+                //instrucicon con 1 operando
+            }
+            else {
+                MOV(maquina,instrucciones[i].op1,instrucciones[i].op2); //Ejemplo de instruccion con 2 operandos
+                //instruccion con 2 operandos
+            }
+        }
     }
 }
 
-/*
-    Lee la instrucción actual de la memoria y ejecuta la operación correspondiente.
-    Dependiendo del opcode, se determina el tipo de operación a realizar.
-    
-    SIN USARRRRR -> eliminar ???????
-
-*/
-void ejecutar_instruccion (t_MV *maquina,char instruccion) {
-    t_operador op1, op2;
-
-    op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
-    op1.tipo = (instruccion >> 4) & 0x03; // Extraer el tipo de operando 1
-        
-    valor_operacion(&op2,*maquina); // Obtener el valor del operando 2
-    maquina->registros[IP] += op2.tipo;
-
-    valor_operacion(&op1,*maquina); // Obtener el valor del operando 1
-    maquina->registros[IP] += op1.tipo;
-    
-    printf("Ejecutando instruccion: %02X\n", instruccion&0x0FF); // Debugging
-    printf("t_op1: %d, t_op2: %d, valor op1:%06X, valor op2:%06X\n", op1.tipo, op2.tipo,op1.valor,op2.valor); // Debugging
-    printf("IP: %06X\n",maquina->registros[IP]&0x0FF); // Debugging
-    
-
-}
 
 /*
     Leo el valor del operando de acuerdo a su tipo en el code segment.
@@ -99,7 +85,7 @@ void valor_operacion (t_operador *op,t_MV mv) {
     y devuelve valor -1.
 */
 int getValor(t_operador op,t_MV maquina) {
-    int valor = 0;
+    short valor = 0;
     switch (op.tipo) {
         case REGISTRO:{
             // Extraer el sector del registro( EAX=00, AL=01, AH=10, AX=11)
@@ -125,11 +111,17 @@ int getValor(t_operador op,t_MV maquina) {
         case MEMORIA:{
             short codigoReg = (op.valor >> 4) & 0x000F;
             short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
-            short int offset = (op.valor >> 8) & 0x0FFFF;
+            short offset = (op.valor >> 8) & 0x0FFFF;
             int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
-            for (int i = 0; i < TAM_CELDA; i++) {
-                valor = valor << 8;
-                valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
+
+            if (dirFisic < maquina.tabla_segmentos[(maquina.registros[CS] >> 16) & 0x0FFFF].base 
+                || (dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[CS] >> 16) & 0x0FFFF].tamano)
+                error(&maquina, 3); // Error: Overflow de memoria
+            else {
+                for (int i = 0; i < TAM_CELDA; i++) {
+                    valor = valor << 8;
+                    valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
+                }
             }
             return valor;
         }
@@ -153,10 +145,11 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
     case MEMORIA:{
         short codReg = (op.valor >> 4) & 0x000F;
         short offsetReg = maquina->memoria[codReg] & 0x0FFFF;
-        short int offset = (op.valor >> 8) & 0x0FFFF;
+        short offset = (op.valor >> 8) & 0x0FFFF;
         int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
         
-        if ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
+        if (dirFisic < maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].base 
+            || (dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
             error(maquina, 3); // Error: Overflow de memoria
         else 
             for (int i = 0; i < TAM_CELDA; i++) {
