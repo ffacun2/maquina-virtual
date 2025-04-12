@@ -309,9 +309,9 @@ void SYS(t_MV *maquina, t_operador op1)
         case 8: // Escribir en hexadecimal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: 0x", maquina->registros[D] + i * CH);
                 for (j = 0; j < CH; j++)
-                    printf("0x%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                    printf("%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
                 printf("\n");
             }
             break;
