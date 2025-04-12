@@ -194,6 +194,8 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 void SYS(t_MV *maquina, t_operador op1)
 {
     char bin[33];
+    int CL = maquina->registros[C] & 0xFF;
+    int CH = (maquina->registros[C] >> 8) & 0xFF;
     printf("Ejecutando SYS...\n");
     switch (op1.valor)
     {
@@ -227,20 +229,27 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            printf("[%X]: %d\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
+            for (int i = 0; i < CL * CH; i++)
+                printf("[%X]: %d\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
             break;
         case 2: // Escribir caracter
-            printf("[%X]: %c\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
+            for (int i = 0; i < CL * CH; i++)
+                printf("[%X]: %c\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
             break;
         case 4: // Escribir en octal
-            printf("[%X]: 0o%o\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
+            for (int i = 0; i < CL * CH; i++)
+                printf("[%X]: 0o%o\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
             break;
         case 8: // Escribir en hexadecimal
-            printf("[%X]: 0x%x\n", maquina->registros[D], maquina->memoria[maquina->registros[D]]);
+            for (int i = 0; i < CL * CH; i++)
+                printf("[%X]: 0x%x\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
             break;
         case 16: // Escribir en binario
-            deIntABinarioString(maquina->memoria[maquina->registros[D]], bin);
-            printf("[%X]: 0b%s\n", maquina->registros[D], bin);
+            for (int i = 0; i < CL * CH; i++)
+            {
+                deIntABinarioString(maquina->memoria[maquina->registros[D] + i], bin);
+                printf("[%X]: 0b%s\n", maquina->registros[D] + i, bin);
+            }
             break;
 
         default:
