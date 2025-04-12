@@ -1,5 +1,6 @@
 #include "operaciones.h"
 #include "mv.h"
+#include "disassembler.h"
 #include <stdio.h>
 #include <string.h>
 /*
@@ -18,32 +19,25 @@ void inicializar_maquina (t_MV *maquina,short int tamano) {
 
 /*
     Inicia el proceso de lectura y ejecución de instrucciones de la máquina virtual.
-    Se encarga de leer la instrucción actual de la memoria y ejecutarla.
+    Se lee un array de instrucciones donde cada elemento tiene operacion y los 
+    operando 1 y 2 con sus respectivos tipo y valor. Este array es generado previamente.
 */
-void ejecutar_maquina (t_MV *maquina) {
+void ejecutar_maquina (t_MV *maquina,t_instruccion *instrucciones,int instruccion_size) {
     printf("Ejecutando la maquina virtual...\n");
-    short index = (maquina->registros[IP] >> 16) & 0x0FFFF; // Extraer el índice del segmento
-    short offset = maquina->registros[IP] & 0x0FFFF; // Extraer el offset
-    short dirFisic = maquina->tabla_segmentos[index].base + offset; // Calcular la dirección física
 
-    while ( dirFisic <  maquina->tabla_segmentos[CS].tamano) {
-        // Leer la instrucción de la memoria
-        char instruccion = maquina->memoria[dirFisic];
-        maquina->registros[IP]++;
-
-        // Ejecutar la instrucción
-        ejecutar_instruccion(maquina, instruccion);
-
-        offset = maquina->registros[IP] & 0x0FFFF; 
-        dirFisic = maquina->tabla_segmentos[index].base + offset;
+    for (int i = 0; i < instruccion_size; i++) {
+        // operaciones(instruccion[i].opcode)(mv, instrucciones[i].op1, instrucciones[i].op2);
     }
 }
 
 /*
     Lee la instrucción actual de la memoria y ejecuta la operación correspondiente.
     Dependiendo del opcode, se determina el tipo de operación a realizar.
+    
+    SIN USARRRRR -> eliminar ???????
+
 */
-void ejecutar_instruccion (t_MV *maquina,char instruccion){
+void ejecutar_instruccion (t_MV *maquina,char instruccion) {
     t_operador op1, op2;
 
     op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
@@ -133,7 +127,7 @@ int getValor(t_operador op,t_MV maquina) {
             short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
             short int offset = (op.valor >> 8) & 0x0FFFF;
             int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg]>>16) & 0x0000FFFF].base + offsetReg + offset;
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < TAM_CELDA; i++) {
                 valor = valor << 8;
                 valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
             }
@@ -165,7 +159,7 @@ void setValor(t_operador op,int valor,t_MV *maquina) {
         if ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
             error(maquina, 3); // Error: Overflow de memoria
         else 
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < TAM_CELDA; i++) {
                 maquina->memoria[dirFisic + i] = (valor >> ( (3 - i)*8)) & 0x000000FF;
             }
     }
@@ -215,4 +209,48 @@ void error(t_MV *mv, int errorCode) {
         break;
     }
     mv->registros[IP] = (mv->registros[IP] & 0xF0000) + mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
+}
+
+/*
+    Genero el array de instrucciones a partir del code segment de la memoria
+    de la maquina virtual.
+    Este array contiene por cada elemento, el opcode y los operandos (tipo y valor)
+    para luego recorrerlo y ejecutar cada instruccion.
+*/
+void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size) {
+    // obtengo el tamaño del segmento de código
+    short size_code = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
+    // Asigna memoria para las instrucciones
+    *instrucciones = malloc(sizeof(t_operador) * size_code);
+
+    if (*instrucciones == NULL) {
+        printf("Error al asignar memoria para el disassembler\n");
+        return;
+    }
+    else {
+        short index = (mv->registros[IP] >> 16) & 0x0FFFF;         // Extraer el índice del segmento
+        short offset = mv->registros[IP] & 0x0FFFF;                // Extraer el offset
+        short dirFisic = mv->tabla_segmentos[index].base + offset; // Calcular la dirección física
+        
+        while (dirFisic < mv->tabla_segmentos[CS].tamano) {
+            // Leer la instrucción de la memoria
+            char instruccion = mv->memoria[dirFisic];
+            mv->registros[IP]++;
+            
+            (*instrucciones)[*instruccion_size].opcode = instruccion&0x0FF; // Guardar el opcode en la instrucción actual
+            // Ejecutar la instrucción
+            (*instrucciones)[*instruccion_size].op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
+            (*instrucciones)[*instruccion_size].op1.tipo = (instruccion >> 4) & 0x03; // Extraer el tipo de operando 1
+
+            valor_operacion(&(*instrucciones)[*instruccion_size].op2, *mv); // Obtener el valor del operando 2 del code segment
+            mv->registros[IP] += (*instrucciones)[*instruccion_size].op2.tipo;
+            
+            valor_operacion(&(*instrucciones)[*instruccion_size].op1, *mv); // Obtener el valor del operando 1 del code segment
+            mv->registros[IP] += (*instrucciones)[*instruccion_size].op1.tipo;
+            
+            offset = mv->registros[IP] & 0x0FFFF;
+            dirFisic = mv->tabla_segmentos[index].base + offset;
+            *instruccion_size += 1; // Incrementar el tamaño de las instrucciones
+        }
+    }
 }

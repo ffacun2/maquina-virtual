@@ -12,6 +12,7 @@
 #define CANT_SEGMENTOS 8
 #define IDENTIFICADOR "VMX25\0"
 #define VERSION_MV 1
+#define TAM_CELDA 4
 
 
 enum {
@@ -57,13 +58,19 @@ typedef struct {
     t_operando tipo;
 } t_operador;
 
+typedef struct {
+    char opcode;
+    t_operador op1;
+    t_operador op2;
+}t_instruccion;
+
 void inicializar_maquina(t_MV *MV,short int tamano);
-void ejecutar_maquina(t_MV *maquina);
+void ejecutar_maquina(t_MV *maquina,t_instruccion *,int instruccion_size);
 void ejecutar_instruccion(t_MV *maquina,char instruccion);
 void valor_operacion(t_operador *op,t_MV mv);
 int getValor(t_operador op,t_MV mv);
 void setValor(t_operador op,int valor,t_MV *maquina);
 void error(t_MV *mv, int errorCode);
-
+void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size);
 
 #endif // MV_H_INCLUDED

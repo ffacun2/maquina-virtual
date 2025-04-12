@@ -54,22 +54,98 @@ char *identificarMnemonico(int codigo){
     case 0x1D:
         return "LDH";
     case 0x1E:
-        return "RND"
+        return "RND";
 
     default:
         return "Mnemonico no identificado";
     }
 }
 
-void escribirDisassembler(t_MV maquina, short tamano)
-{
-    char *mnemonicos = {};
-    int tamOpA, tamOpB, pc = 0, codMnemonic, instruccion;
-    while (pc < tamano)
-    {
-        instruccion = maquina.memoria[pc];
-        codMnemonic = instruccion & 0x1F;
-        tamOpA = (instruccion >> 4) & 3;
-        tamOpB = (instruccion >> 6) & 3;
+char *indentificarRegistro(int codigo) {
+    switch (codigo) {
+        case 0:
+            return "CS";
+        case 1:
+            return "DS";
+        case 5:
+            return "IP";
+        case 8:
+            return "CC";
+        case 9:
+            return "AC";
+        case 10:
+            return "EAX";
+        case 11:
+            return "EBX";
+        case 12:
+            return "ECX";
+        case 13:
+            return "EDX";
+        case 14:
+            return "EEX";
+        case 15:
+            return "EFX";
+        default:
+            return "Registro no identificado";
     }
+}
+
+void imprime_byte (int valor, int cant_byte){
+    for (int i = 0; i < cant_byte; i++) {
+        printf("%02X ", (valor >> (8 * (cant_byte - i - 1))) & 0xFF);
+    }
+}
+
+void imprimir_operador(t_operador operador) {
+    switch (operador.tipo) {
+        case REGISTRO: {
+            switch ((operador.valor >> 2) & 0x03) {
+                case 0:
+                    printf("%s", indentificarRegistro((operador.valor >> 4)&0x0F));
+                break;
+                case 1:
+                    printf("%cL", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                break;
+                case 2:
+                    printf("%cH", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                break;
+                case 3:
+                    printf("%cX", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                break;
+                default:
+                break;
+            }
+        }
+            break;
+        case INMEDIATO:
+            printf("%d", (short) operador.valor );
+            break;
+        case MEMORIA:
+            printf("[%s + %d]", indentificarRegistro((operador.valor >> 4)&0x0F),(operador.valor >> 8)&0x0FFFF);
+            break;
+        default:
+            break;
+    }
+}
+//revisar valores negativosss 
+void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
+    char op_ant = 0;
+
+    for (int i = 0; i < tamano; i++) {
+        printf("[%04X] %02X ", op_ant, instrucciones[i].opcode&0x0FF); 
+        imprime_byte(instrucciones[i].op2.valor, instrucciones[i].op2.tipo);
+        imprime_byte(instrucciones[i].op1.valor, instrucciones[i].op1.tipo);
+        for (int j = 0; j < (7-instrucciones[i].op1.tipo-instrucciones[i].op2.tipo); j++) {
+            printf("  ");
+        }
+        printf("\t| %s ",identificarMnemonico(instrucciones[i].opcode&0x01F));
+        imprimir_operador(instrucciones[i].op1);
+        if (instrucciones[i].op1.tipo != NINGUNO)
+            printf(", ");
+        imprimir_operador(instrucciones[i].op2);
+        printf("\n");
+        op_ant += instrucciones[i].op1.tipo + instrucciones[i].op2.tipo + 1;
+    }
+    
+
 }
