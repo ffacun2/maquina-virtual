@@ -215,21 +215,55 @@ void SYS(t_MV *maquina, t_operador op1)
                     x = x >> 8;
                 }
             }
-
-            scanf("%d", &maquina->memoria[maquina->registros[D]]);
             break;
         case 2: // Leer caracter
-            scanf("%c", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++)
+            {
+                printf("[%X]: ", maquina->registros[D] + i * CH);
+                scanf("%c", &x);
+                for (j = CH - 1; j >= 0; j--)
+                {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
         case 4: // Leer en octal
-            scanf("%o", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++)
+            {
+                printf("[%X]: ", maquina->registros[D] + i * CH);
+                scanf("%o", &x);
+                for (j = CH - 1; j >= 0; j--)
+                {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
         case 8: // Leer en hexadecimal
-            scanf("%x", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++)
+            {
+                printf("[%X]: ", maquina->registros[D] + i * CH);
+                scanf("%x", &x);
+                for (j = CH - 1; j >= 0; j--)
+                {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
         case 16: // Leer en binario
-            scanf("%s", bin);
-            maquina->memoria[maquina->registros[D]] = deBinarioStringAInt(bin);
+            for (i = 0; i < CL; i++)
+            {
+                printf("[%X]: ", maquina->registros[D] + i * CH);
+                scanf("%s", bin);
+                x = deBinarioStringAInt(bin);
+                for (j = CH - 1; j >= 0; j--)
+                {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
 
         default:
