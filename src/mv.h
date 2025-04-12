@@ -77,5 +77,6 @@ void setValor(t_operador op, int valor, t_MV *maquina);
 void error(t_MV *mv, int errorCode);
 void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size);
 void cargaAlta(t_operador op, short int valor, t_MV *maquina);
+void cargaBaja(t_operador op, short int valor, t_MV *maquina);
 
 #endif // MV_H_INCLUDED
