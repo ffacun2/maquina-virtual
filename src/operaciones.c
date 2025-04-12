@@ -299,10 +299,14 @@ void SYS(t_MV *maquina, t_operador op1)
         case 4: // Escribir en octal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: 0o", maquina->registros[D] + i * CH);
+                x = 0;
                 for (j = 0; j < CH; j++)
-                    printf("0o%o", maquina->memoria[maquina->registros[D] + i * CH + j]);
-                printf("\n");
+                {
+                    x = x << 8;
+                    x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                }
+                printf("%o\n", x);
             }
             break;
         case 8: // Escribir en hexadecimal
@@ -317,11 +321,11 @@ void SYS(t_MV *maquina, t_operador op1)
         case 16: // Escribir en binario
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: 0b", maquina->registros[D] + i * CH);
                 for (j = 0; j < CH; j++)
                 {
                     deIntABinarioString(maquina->memoria[maquina->registros[D] + i * CH + j], bin);
-                    printf("0b%s", bin);
+                    printf("%s", bin);
                 }
                 printf("\n");
             }
