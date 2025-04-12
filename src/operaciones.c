@@ -8,27 +8,22 @@
 // Con int no pasa.
 // Hay valores negativos en inmediatos y offset
 
-void FuncionCC(t_MV *maquina, int resultado)
-{                               // actualiza CC
+void FuncionCC(t_MV* maquina, int resultado) {                               // actualiza CC
     maquina->registros[CC] = 0; // reseteo CC
 
     if (resultado == 0)
         maquina->registros[CC] |= 1 << 0;
-    else
-    {
+    else {
         if (resultado < 0)
             maquina->registros[CC] |= 1 << 1;
     }
 }
 
-int deBinarioStringAInt(char bin[])
-{
+int deBinarioStringAInt(char bin[]) {
     int exponente = 0;
     int resultado = 0;
-    for (int i = strlen(bin) - 1; i >= 0; i--)
-    {
-        if (bin[i] != '0' && bin[i] != '1')
-        {
+    for (int i = strlen(bin) - 1; i >= 0; i--) {
+        if (bin[i] != '0' && bin[i] != '1') {
             printf("ERROR: se pidio un numero binario y se ingreso cualquier cosa");
             break;
         }
@@ -38,24 +33,20 @@ int deBinarioStringAInt(char bin[])
     return resultado;
 }
 
-void deIntABinarioString(int nro, char bin[])
-{
+void deIntABinarioString(int nro, char bin[]) {
     bin[32] = '\0';
-    for (int i = 31; i >= 0; i--)
-    {
+    for (int i = 31; i >= 0; i--) {
         bin[i] = '0' + (nro & 0x1);
         nro = nro >> 1;
     }
 }
 
-void MOV(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void MOV(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando MOV...\n");
     int b = getValor(op2, *maquina);
     setValor(op1, b, maquina);
 }
-void ADD(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void ADD(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando ADD...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -63,8 +54,7 @@ void ADD(t_MV *maquina, t_operador op1, t_operador op2)
     printf("Resultado: %d\n", b + a);
     FuncionCC(maquina, b + a);
 }
-void SUB(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void SUB(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando SUB...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -72,16 +62,14 @@ void SUB(t_MV *maquina, t_operador op1, t_operador op2)
     printf("Resultado: %d\n", b - a);
     FuncionCC(maquina, b - a);
 }
-void SWAP(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void SWAP(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando SWAP...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     setValor(op1, a, maquina);
     setValor(op2, b, maquina);
 }
-void MUL(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void MUL(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando MUL...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -89,13 +77,11 @@ void MUL(t_MV *maquina, t_operador op1, t_operador op2)
     printf("Resultado: %d\n", b * a);
     FuncionCC(maquina, b * a);
 }
-void DIV(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void DIV(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando DIV...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
-    if (a != 0)
-    {
+    if (a != 0) {
         setValor(op1, b / a, maquina);
         maquina->registros[AC] = b % a; // resto
         printf("Resultado: cosciente %d resto %d\n", b / a, b % a);
@@ -104,8 +90,7 @@ void DIV(t_MV *maquina, t_operador op1, t_operador op2)
     else
         printf("error divisor no pude ser cero\n");
 }
-void CMP(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void CMP(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando CMP...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -113,8 +98,7 @@ void CMP(t_MV *maquina, t_operador op1, t_operador op2)
     FuncionCC(maquina, resto);
     printf("Resultado de la comparación: %d (CC = %d)\n", resto, maquina->registros[CC]);
 }
-void SHL(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void SHL(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando SHL...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -123,8 +107,7 @@ void SHL(t_MV *maquina, t_operador op1, t_operador op2)
     FuncionCC(maquina, resultado);
     printf("Resultado: %d\n", resultado);
 }
-void SHR(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void SHR(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando SHR...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -133,8 +116,7 @@ void SHR(t_MV *maquina, t_operador op1, t_operador op2)
     FuncionCC(maquina, resultado);
     printf("Resultado: %d\n", resultado);
 }
-void AND(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void AND(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando AND...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -143,8 +125,7 @@ void AND(t_MV *maquina, t_operador op1, t_operador op2)
     FuncionCC(maquina, resultado);
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
-void OR(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void OR(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando OR...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -153,8 +134,7 @@ void OR(t_MV *maquina, t_operador op1, t_operador op2)
     FuncionCC(maquina, resultado);
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
-void XOR(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void XOR(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando XOR...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
@@ -163,25 +143,21 @@ void XOR(t_MV *maquina, t_operador op1, t_operador op2)
     FuncionCC(maquina, resultado);
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
-void LDL(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void LDL(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando LDL...\n");
     cargaBaja(op1, getValor(op2, *maquina), maquina);
 }
-void LDH(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void LDH(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando LDH...\n");
     cargaAlta(op1, getValor(op2, *maquina), maquina);
 }
-void RND(t_MV *maquina, t_operador op1, t_operador op2)
-{
+void RND(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando RND...\n");
 
     int a = getValor(op2, *maquina);
 
     static int iniciado = 0;
-    if (!iniciado)
-    {
+    if (!iniciado) {
         srand(time(NULL)); // Inicializar el generador de números aleatorios solo una vez
         iniciado = 1;
     }
@@ -191,14 +167,12 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
     printf("Resultado: %d\n", resultado);
 }
 
-void SYS(t_MV *maquina, t_operador op1)
-{
+void SYS(t_MV* maquina, t_operador op1) {
     char bin[33];
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     printf("Ejecutando SYS...\n");
-    switch (op1.valor)
-    {
+    switch (op1.valor) {
     case 1: // Modo lectura
         printf("[%X]: ", maquina->registros[D]);
         switch (maquina->registros[A] & 0xFF) // AL
@@ -229,11 +203,9 @@ void SYS(t_MV *maquina, t_operador op1)
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            for (int i = 0; i < CL; i++)
-            {
+            for (int i = 0; i < CL; i++) {
                 printf("[%X]: ", maquina->registros[D]);
-                for (int j = 0; j < CH; j++)
-                {
+                for (int j = 0; j < CH; j++) {
                     /* code */
                 }
                 printf("[%X]: %d\n" + i, maquina->memoria[maquina->registros[D] + i]);
@@ -252,8 +224,7 @@ void SYS(t_MV *maquina, t_operador op1)
                 printf("[%X]: 0x%x\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
             break;
         case 16: // Escribir en binario
-            for (int i = 0; i < CL * CH; i++)
-            {
+            for (int i = 0; i < CL * CH; i++) {
                 deIntABinarioString(maquina->memoria[maquina->registros[D] + i], bin);
                 printf("[%X]: 0b%s\n", maquina->registros[D] + i, bin);
             }
@@ -269,29 +240,25 @@ void SYS(t_MV *maquina, t_operador op1)
         break;
     }
 }
-void Salto(t_MV *maquina, t_operador op1)
-{                                                    // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
+void Salto(t_MV* maquina, t_operador op1) {                                                    // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
     int direccionLogica = getValor(op1, *maquina);   // El valor del operando es la dirección lógica a la que queremos saltar
     short offset = direccionLogica & 0xFFFF;         // Extraer offset (los 16 bits bajos)
     short tam = maquina->tabla_segmentos[CS].tamano; // Verificar que esté dentro del segmento de código
     if (offset >= tam)
         printf("Error: salto fuera de los límites del código\n");
-    else
-    {
+    else {
         maquina->registros[IP] = direccionLogica;
         printf("Salto a dirección lógica: 0x%08X\n", direccionLogica);
     }
 }
-void JMP(t_MV *maquina, t_operador op1)
-{
+void JMP(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JMP...\n");
     if (op1.tipo != INMEDIATO && op1.tipo != MEMORIA)
         printf("Error: JMP solo admite inmediatos o direcciones lógicas (tipo MEMORIA)\n");
     else
         Salto(maquina, op1);
 }
-void JZ(t_MV *maquina, t_operador op1)
-{
+void JZ(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JZ...\n");
 
     if (maquina->registros[CC] & (1 << 0))
@@ -299,48 +266,42 @@ void JZ(t_MV *maquina, t_operador op1)
     else
         printf("No se cumple la condición para el salto\n");
 }
-void JP(t_MV *maquina, t_operador op1)
-{
+void JP(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JP...\n");
     if (!(maquina->registros[CC] & (1 << 1)))
         Salto(maquina, op1);
     else
         printf("No se cumple la condición para el salto\n");
 }
-void JN(t_MV *maquina, t_operador op1)
-{
+void JN(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JN...\n");
     if (maquina->registros[CC] & (1 << 1))
         Salto(maquina, op1);
     else
         printf("No se cumple la condición para el salto\n");
 }
-void JNZ(t_MV *maquina, t_operador op1)
-{
+void JNZ(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JNZ...\n");
     if (!(maquina->registros[CC] & (1 << 0)))
         Salto(maquina, op1);
     else
         printf("No se cumple la condición para el salto\n");
 }
-void JNP(t_MV *maquina, t_operador op1)
-{
+void JNP(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JNP...\n");
     if ((maquina->registros[CC] & (1 << 1)) || (maquina->registros[CC] & (1 << 0)))
         Salto(maquina, op1);
     else
         printf("No se cumple la condición para el salto\n");
 }
-void JNN(t_MV *maquina, t_operador op1)
-{
+void JNN(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JNN...\n");
     if (!(maquina->registros[CC] & (1 << 1)))
         Salto(maquina, op1);
     else
         printf("No se cumple la condición para el salto\n");
 }
-void NOT(t_MV *maquina, t_operador op1)
-{
+void NOT(t_MV* maquina, t_operador op1) {
     printf("Ejecutando NOT...\n");
 
     int b = getValor(op1, *maquina);
@@ -351,8 +312,7 @@ void NOT(t_MV *maquina, t_operador op1)
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
 
-void STOP(t_MV *maquina)
-{
+void STOP(t_MV* maquina) {
     printf("Ejecutando STOP...\n");
     exit(0);
 }
