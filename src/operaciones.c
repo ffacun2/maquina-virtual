@@ -193,7 +193,7 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
-    char bin[33];
+    char bin[33], *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, x;
@@ -220,12 +220,9 @@ void SYS(t_MV *maquina, t_operador op1)
             for (i = 0; i < CL; i++)
             {
                 printf("[%4X]: ", maquina->registros[D] + i * CH);
-                scanf("%c", &x);
-                for (j = CH - 1; j >= 0; j--)
-                {
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
-                    x = x >> 8;
-                }
+                scanf("%s", str);
+                for (j = 0; j < CH; j++)
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = str[j];
             }
             break;
         case 4: // Leer en octal
