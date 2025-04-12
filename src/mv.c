@@ -279,11 +279,11 @@ void cargaAlta(t_operador op, short int valor, t_MV *maquina)
     {
     // 1 registro = 4 bytes
     case REGISTRO:
-        setValor(op, getValor(op, *maquina) | valor << 16, maquina);
+        setValor(op, (getValor(op, *maquina) & 0x0000FFFF) | (valor << 16), maquina);
         break;
     // 1 celda de memoria = 1 byte
     case MEMORIA:
-        setValor(op, getValor(op, *maquina) | valor << 4, maquina);
+        setValor(op, (getValor(op, *maquina) & 0xF) | (valor << 4), maquina);
         break;
 
     default:
@@ -298,11 +298,11 @@ void cargaBaja(t_operador op, short int valor, t_MV *maquina)
     {
     // 1 registro = 4 bytes
     case REGISTRO:
-        setValor(op, getValor(op, *maquina) | valor, maquina);
+        setValor(op, (getValor(op, *maquina) & 0xFFFF0000) | valor, maquina);
         break;
     // 1 celda de memoria = 1 byte
     case MEMORIA:
-        setValor(op, getValor(op, *maquina) | valor & 0xF, maquina);
+        setValor(op, (getValor(op, *maquina) & 0xF0) | valor & 0xF, maquina);
         break;
 
     default:
