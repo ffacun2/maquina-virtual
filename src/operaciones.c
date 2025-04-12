@@ -232,14 +232,14 @@ void SYS(t_MV *maquina, t_operador op1)
             printf("%c", maquina->memoria[maquina->registros[D]]);
             break;
         case 4: // Escribir en octal
-            printf("%o", maquina->memoria[maquina->registros[D]]);
+            printf("0o%o", maquina->memoria[maquina->registros[D]]);
             break;
         case 8: // Escribir en hexadecimal
-            printf("%x", maquina->memoria[maquina->registros[D]]);
+            printf("0x%x", maquina->memoria[maquina->registros[D]]);
             break;
         case 16: // Escribir en binario
             deIntABinarioString(maquina->memoria[maquina->registros[D]], bin);
-            printf("%s", bin);
+            printf("0b%s", bin);
             break;
 
         default:
