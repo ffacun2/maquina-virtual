@@ -197,7 +197,7 @@ void SYS(t_MV *maquina, t_operador op1)
     char bin[33], *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
-    int i, j, x;
+    int i, j, k, x;
     int salidas[32], z[32];
     t_splitter splitter1, splitter2;
     printf("Ejecutando SYS...\n");
@@ -271,78 +271,62 @@ void SYS(t_MV *maquina, t_operador op1)
         }
 
         break;
-    case 2:                                   // Modo escritura
-        switch (maquina->registros[A] & 0xFF) // AL
+    case 2: // Modo escritura
+        for (i = 0; i < CL; i++)
         {
-        case 1: // Escribir en decimal
-            for (i = 0; i < CL; i++)
-            {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
-                x = 0;
-                for (j = 0; j < CH; j++)
-                {
-                    x = x << 8;
-                    x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
-                }
-                printf("%d\n", x);
-            }
-            break;
-        case 2: // Escribir caracter
-            for (i = 0; i < CL; i++)
-            {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
-                for (j = 0; j < CH; j++)
-                    if (isprint(maquina->memoria[maquina->registros[D] + i * CH + j]))
-                        printf("%c", maquina->memoria[maquina->registros[D] + i * CH + j]);
-                    else
-                        printf(".");
+            printf("[%4X]: ", maquina->registros[D] + i * CH);
+            for (k = 4; k >= 0; k--)
+                if (salidas[k])
+                    switch (k)
+                    {
+                    case 4: // Escribe binario
+                        printf("0b");
+                        for (j = 0; j < CH; j++)
+                        {
+                            deIntABinarioString(maquina->memoria[maquina->registros[D] + i * CH + j], bin);
+                            printf("%s", bin);
+                        }
+                        printf(" ");
+                        break;
+                    case 3: // Escribe hexadecimal
+                        printf("0x");
+                        for (j = 0; j < CH; j++)
+                            printf("%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                        printf(" ");
+                        break;
+                    case 2: // Escribe en octal
+                        printf("0o");
+                        x = 0;
+                        for (j = 0; j < CH; j++)
+                        {
+                            x = x << 8;
+                            x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                        }
+                        printf("%o ", x);
+                        break;
+                    case 1: // Escribe caracteres
+                        for (j = 0; j < CH; j++)
+                            if (isprint(maquina->memoria[maquina->registros[D] + i * CH + j]))
+                                printf("%c", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                            else
+                                printf(".");
+                        printf(" ");
+                        break;
+                    case 0: // Escribe decimal
+                        x = 0;
+                        for (j = 0; j < CH; j++)
+                        {
+                            x = x << 8;
+                            x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                        }
+                        printf("%d ", x);
+                        break;
 
-                printf("\n");
-            }
-            break;
-        case 4: // Escribir en octal
-            for (i = 0; i < CL; i++)
-            {
-                printf("[%4X]: 0o", maquina->registros[D] + i * CH);
-                x = 0;
-                for (j = 0; j < CH; j++)
-                {
-                    x = x << 8;
-                    x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
-                }
-                printf("%o\n", x);
-            }
-            break;
-        case 8: // Escribir en hexadecimal
-            for (i = 0; i < CL; i++)
-            {
-                printf("[%4X]: 0x", maquina->registros[D] + i * CH);
-                for (j = 0; j < CH; j++)
-                    printf("%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
-                printf("\n");
-            }
-            break;
-        case 16: // Escribir en binario
-            for (i = 0; i < CL; i++)
-            {
-                printf("[%4X]: 0b", maquina->registros[D] + i * CH);
-                for (j = 0; j < CH; j++)
-                {
-                    deIntABinarioString(maquina->memoria[maquina->registros[D] + i * CH + j], bin);
-                    printf("%s", bin);
-                }
-                printf("\n");
-            }
-            break;
-
-        default:
-            break;
+                    default:
+                        break;
+                    }
         }
-        break;
-
-    default:
-        printf("ERROR: llamada a sistema operativo invalida");
-        break;
+        printf("\n");
     }
 }
 void Salto(t_MV *mv, t_operador op1)
