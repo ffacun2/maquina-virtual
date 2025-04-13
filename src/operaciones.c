@@ -235,11 +235,10 @@ void SYS(t_MV *maquina, t_operador op1)
             {
                 printf("[%4X]: ", maquina->registros[D] + i * CH);
                 scanf("%o", &x);
-                for (j = CH - 1; j >= 0; j--)
-                {
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
-                    x = x >> 8;
-                }
+                setEntrada(&splitter2, x);
+                getSalidas(splitter2, z);
+                for (j = 0; j < CH; j++)
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[CH - j - 1];
             }
             break;
         case 8: // Leer en hexadecimal
@@ -260,11 +259,10 @@ void SYS(t_MV *maquina, t_operador op1)
                 printf("[%4X]: ", maquina->registros[D] + i * CH);
                 scanf("%s", bin);
                 x = deBinarioStringAInt(bin);
-                for (j = CH - 1; j >= 0; j--)
-                {
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
-                    x = x >> 8;
-                }
+                setEntrada(&splitter2, x);
+                getSalidas(splitter2, z);
+                for (j = 0; j < CH; j++)
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[CH - j - 1];
             }
             break;
 
