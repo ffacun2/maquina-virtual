@@ -1,7 +1,6 @@
 #include "operaciones.h"
 #include "mv.h"
-#include <time.h>
-#include <stdlib.h>
+#include "splitter.h"
 
 // A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
 // nos permite detectar los valores negativos.
@@ -48,10 +47,10 @@ void MOV(t_MV* maquina, t_operador op1, t_operador op2) {
 }
 void ADD(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando ADD...\n");
-    int b = getValor(op1, *maquina);
-    int a = getValor(op2, *maquina);
-    setValor(op1, b + a, maquina);
-    printf("Resultado: %d\n", b + a);
+    int a = getValor(op1, *maquina);
+    int b = getValor(op2, *maquina);
+    setValor(op1, a + b, maquina);
+    printf("Resultado ADD: %d\n", b + a);
     FuncionCC(maquina, b + a);
 }
 void SUB(t_MV* maquina, t_operador op1, t_operador op2) {
@@ -88,7 +87,7 @@ void DIV(t_MV* maquina, t_operador op1, t_operador op2) {
         FuncionCC(maquina, b / a);
     }
     else
-        printf("error divisor no pude ser cero\n");
+        error(maquina, 2);
 }
 void CMP(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando CMP...\n");
@@ -96,7 +95,7 @@ void CMP(t_MV* maquina, t_operador op1, t_operador op2) {
     int a = getValor(op2, *maquina);
     int resto = b - a;
     FuncionCC(maquina, resto);
-    printf("Resultado de la comparación: %d (CC = %d)\n", resto, maquina->registros[CC]);
+    printf("Resultado de la comparacion: %d (CC = %d)\n", resto, maquina->registros[CC]);
 }
 void SHL(t_MV* maquina, t_operador op1, t_operador op2) {
     printf("Ejecutando SHL...\n");
@@ -168,30 +167,69 @@ void RND(t_MV* maquina, t_operador op1, t_operador op2) {
 }
 
 void SYS(t_MV* maquina, t_operador op1) {
-    char bin[33];
+    char bin[33], * str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
+    int i, j, x;
+    int salidas[32];
+    t_splitter splitter1, splitter2;
     printf("Ejecutando SYS...\n");
+    splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
+    getSalidas(splitter1, salidas);
+    setTamanio(&splitter2, 8);
     switch (op1.valor) {
     case 1: // Modo lectura
-        printf("[%X]: ", maquina->registros[D]);
+
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Leer en decimal
-            scanf("%d", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                scanf("%d", &x);
+                for (j = CH - 1; j >= 0; j--) {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
         case 2: // Leer caracter
-            scanf("%c", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                scanf("%s", str);
+                for (j = 0; j < CH; j++)
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = str[j];
+            }
             break;
         case 4: // Leer en octal
-            scanf("%o", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                scanf("%o", &x);
+                for (j = CH - 1; j >= 0; j--) {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
         case 8: // Leer en hexadecimal
-            scanf("%x", &maquina->memoria[maquina->registros[D]]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                scanf("%x", &x);
+                for (j = CH - 1; j >= 0; j--) {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
         case 16: // Leer en binario
-            scanf("%s", bin);
-            maquina->memoria[maquina->registros[D]] = deBinarioStringAInt(bin);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                scanf("%s", bin);
+                x = deBinarioStringAInt(bin);
+                for (j = CH - 1; j >= 0; j--) {
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    x = x >> 8;
+                }
+            }
             break;
 
         default:
@@ -203,30 +241,51 @@ void SYS(t_MV* maquina, t_operador op1) {
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Escribir en decimal
-            for (int i = 0; i < CL; i++) {
-                printf("[%X]: ", maquina->registros[D]);
-                for (int j = 0; j < CH; j++) {
-                    /* code */
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                x = 0;
+                for (j = 0; j < CH; j++) {
+                    x = x << 8;
+                    x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
                 }
-                printf("[%X]: %d\n" + i, maquina->memoria[maquina->registros[D] + i]);
+                printf("%d\n", x);
             }
             break;
         case 2: // Escribir caracter
-            for (int i = 0; i < CL * CH; i++)
-                printf("[%X]: %c\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                for (j = 0; j < CH; j++)
+                    printf("%c", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                printf("\n");
+            }
             break;
         case 4: // Escribir en octal
-            for (int i = 0; i < CL * CH; i++)
-                printf("[%X]: 0o%o\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: 0o", maquina->registros[D] + i * CH);
+                x = 0;
+                for (j = 0; j < CH; j++) {
+                    x = x << 8;
+                    x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                }
+                printf("%o\n", x);
+            }
             break;
         case 8: // Escribir en hexadecimal
-            for (int i = 0; i < CL * CH; i++)
-                printf("[%X]: 0x%x\n", maquina->registros[D] + i, maquina->memoria[maquina->registros[D] + i]);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: 0x", maquina->registros[D] + i * CH);
+                for (j = 0; j < CH; j++)
+                    printf("%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                printf("\n");
+            }
             break;
         case 16: // Escribir en binario
-            for (int i = 0; i < CL * CH; i++) {
-                deIntABinarioString(maquina->memoria[maquina->registros[D] + i], bin);
-                printf("[%X]: 0b%s\n", maquina->registros[D] + i, bin);
+            for (i = 0; i < CL; i++) {
+                printf("[%4X]: 0b", maquina->registros[D] + i * CH);
+                for (j = 0; j < CH; j++) {
+                    deIntABinarioString(maquina->memoria[maquina->registros[D] + i * CH + j], bin);
+                    printf("%s", bin);
+                }
+                printf("\n");
             }
             break;
 
@@ -240,21 +299,23 @@ void SYS(t_MV* maquina, t_operador op1) {
         break;
     }
 }
-void Salto(t_MV* maquina, t_operador op1) {                                                    // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
-    int direccionLogica = getValor(op1, *maquina);   // El valor del operando es la dirección lógica a la que queremos saltar
-    short offset = direccionLogica & 0xFFFF;         // Extraer offset (los 16 bits bajos)
-    short tam = maquina->tabla_segmentos[CS].tamano; // Verificar que esté dentro del segmento de código
-    if (offset >= tam)
-        printf("Error: salto fuera de los límites del código\n");
+void Salto(t_MV* mv, t_operador op1) {                                                    // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
+    int valor = getValor(op1, *mv);   // El valor del operando es la direccion logica a la que queremos saltar         // Extraer offset (los 16 bits bajos)
+    short pos = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base + valor; // Verificar que esté dentro del segmento de codigo
+    short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
+    printf("valor salto: %04X, posicion:%04X, size:%04X\n", valor, pos, size);
+
+    if (pos > size)
+        error(mv, 3);
     else {
-        maquina->registros[IP] = direccionLogica;
-        printf("Salto a dirección lógica: 0x%08X\n", direccionLogica);
+        mv->registros[IP] = pos;
+        printf("Salto a direccion : 0x%04X\n", pos);
     }
 }
 void JMP(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JMP...\n");
     if (op1.tipo != INMEDIATO && op1.tipo != MEMORIA)
-        printf("Error: JMP solo admite inmediatos o direcciones lógicas (tipo MEMORIA)\n");
+        printf("Error: JMP solo admite inmediatos o direcciones logicas (tipo MEMORIA)\n");
     else
         Salto(maquina, op1);
 }
@@ -264,48 +325,48 @@ void JZ(t_MV* maquina, t_operador op1) {
     if (maquina->registros[CC] & (1 << 0))
         Salto(maquina, op1);
     else
-        printf("No se cumple la condición para el salto\n");
+        printf("No se cumple la condicion para el salto\n");
 }
 void JP(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JP...\n");
     if (!(maquina->registros[CC] & (1 << 1)))
         Salto(maquina, op1);
     else
-        printf("No se cumple la condición para el salto\n");
+        printf("No se cumple la condicion para el salto\n");
 }
 void JN(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JN...\n");
     if (maquina->registros[CC] & (1 << 1))
         Salto(maquina, op1);
     else
-        printf("No se cumple la condición para el salto\n");
+        printf("No se cumple la condicion para el salto\n");
 }
 void JNZ(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JNZ...\n");
     if (!(maquina->registros[CC] & (1 << 0)))
         Salto(maquina, op1);
     else
-        printf("No se cumple la condición para el salto\n");
+        printf("No se cumple la condicion para el salto\n");
 }
 void JNP(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JNP...\n");
     if ((maquina->registros[CC] & (1 << 1)) || (maquina->registros[CC] & (1 << 0)))
         Salto(maquina, op1);
     else
-        printf("No se cumple la condición para el salto\n");
+        printf("No se cumple la condicion para el salto\n");
 }
 void JNN(t_MV* maquina, t_operador op1) {
     printf("Ejecutando JNN...\n");
     if (!(maquina->registros[CC] & (1 << 1)))
         Salto(maquina, op1);
     else
-        printf("No se cumple la condición para el salto\n");
+        printf("No se cumple la condicion para el salto\n");
 }
 void NOT(t_MV* maquina, t_operador op1) {
     printf("Ejecutando NOT...\n");
 
     int b = getValor(op1, *maquina);
-    int resultado = ~b; // negación bit a bit
+    int resultado = ~b; // negacion bit a bit
 
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
@@ -315,4 +376,35 @@ void NOT(t_MV* maquina, t_operador op1) {
 void STOP(t_MV* maquina) {
     printf("Ejecutando STOP...\n");
     exit(0);
+}
+
+void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[]) {
+    func0[0] = &STOP;
+
+
+    func1[0] = &SYS;
+    func1[1] = &JMP;
+    func1[2] = &JZ;
+    func1[3] = &JP;
+    func1[4] = &JN;
+    func1[5] = &JNZ;
+    func1[6] = &JNP;
+    func1[7] = &JNN;
+    func1[8] = &NOT;
+
+    func2[0] = &MOV;
+    func2[1] = &ADD;
+    func2[2] = &SUB;
+    func2[3] = &SWAP;
+    func2[4] = &MUL;
+    func2[5] = &DIV;
+    func2[6] = &CMP;
+    func2[7] = &SHL;
+    func2[8] = &SHR;
+    func2[9] = &AND;
+    func2[10] = &OR;
+    func2[11] = &XOR;
+    func2[12] = &LDL;
+    func2[13] = &LDH;
+    func2[14] = &RND;
 }

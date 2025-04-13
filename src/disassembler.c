@@ -34,7 +34,7 @@ char *identificarMnemonico(int codigo) {
     }
 }
 
-char *indentificarRegistro(int codigo) {
+char *identificarRegistro(int codigo) {
     switch (codigo) {
         case 0: return "CS";
         case 1: return "DS";
