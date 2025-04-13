@@ -198,7 +198,7 @@ void SYS(t_MV *maquina, t_operador op1)
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, x;
-    int salidas[32];
+    int salidas[32], z[32];
     t_splitter splitter1, splitter2;
     printf("Ejecutando SYS...\n");
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
@@ -215,11 +215,10 @@ void SYS(t_MV *maquina, t_operador op1)
             {
                 printf("[%4X]: ", maquina->registros[D] + i * CH);
                 scanf("%d", &x);
+                setEntrada(&splitter2, x);
+                getSalidas(splitter2, z);
                 for (j = CH - 1; j >= 0; j--)
-                {
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
-                    x = x >> 8;
-                }
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[j];
             }
             break;
         case 2: // Leer caracter
