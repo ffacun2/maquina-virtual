@@ -204,7 +204,7 @@ void SYS(t_MV *maquina, t_operador op1)
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
-    dirFisica = maquina->tabla_segmentos[0].tamano + maquina->registros[D] & 0xFFFF;
+    dirFisica = maquina->tabla_segmentos[1].base + maquina->registros[D] & 0xFFFF;
     switch (op1.valor)
     {
     case 1: // Modo lectura
