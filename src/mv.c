@@ -7,14 +7,14 @@
     Inicializa la máquina virtual, configurando los registros y la tabla de segmentos.
     Se establece el tamaño del segmento de datos y el segmento de código, así como la base
 */
-void inicializar_maquina(t_MV* maquina, short int tamano) {
-    maquina->registros[CS] = 0x00000000;
-    maquina->registros[DS] = 0x00010000;
-    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].base = 0;
-    maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano = tamano;
-    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].base = tamano;
-    maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].tamano = TAMANO_MEMORIA - tamano;
-    maquina->registros[IP] = maquina->registros[CS];
+void inicializar_maquina(t_MV* mv, short int tamano) {
+    mv->registros[CS] = 0x00000000;
+    mv->registros[DS] = 0x00010000;
+    mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base = 0;
+    mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano = tamano;
+    mv->tabla_segmentos[(mv->registros[DS] >> 16) & 0x0FFFF].base = tamano;
+    mv->tabla_segmentos[(mv->registros[DS] >> 16) & 0x0FFFF].tamano = TAMANO_MEMORIA - tamano;
+    mv->registros[IP] = mv->registros[CS];
 }
 
 /*
@@ -22,31 +22,32 @@ void inicializar_maquina(t_MV* maquina, short int tamano) {
     Se lee un array de instrucciones donde cada elemento tiene operacion y los
     operando 1 y 2 con sus respectivos tipo y valor. Este array es generado previamente.
 */
-void ejecutar_maquina(t_MV* maquina, t_instruccion* instrucciones, int instruccion_size) {
+void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_size) {
+    t_func0 t_func0[1];
+    t_func1 t_func1[10];
+    t_func2 t_func2[15];
+    int posicion = 0;
+
+    inicializo_vector_op(t_func0, t_func1, t_func2); // Inicializa los vectores de funciones
     printf("Ejecutando la maquina virtual...\n");
 
-    // // operaciones(instruccion[i].opcode)(mv, instrucciones[i].op1, instrucciones[i].op2);
-    // if (instrucciones[i].op1.tipo == NINGUNO && instrucciones[i].op2.tipo == NINGUNO)
-    // {
-    //     // instruccion con 0 operandos
-    // }
-    // else
-    // {
-    //     if (instrucciones[i].op1.tipo == NINGUNO)
-    //     {
-    //         // instrucicon con 1 operando
-    //     }
-    //     else
-    //     {
-    //         MOV(maquina, instrucciones[i].op1, instrucciones[i].op2); // Ejemplo de instruccion con 2 operandos
-    //         // instruccion con 2 operandos
-    //     }
-    // }
-    int posicion = 0;
-    while (posicion < instruccion_size) {
-        printf("[%04X]\n",posicion);
-        posicion += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
+    mv->registros[IP] = mv->registros[CS]; // Inicializa el registro IP con la dirección del segmento de código
+    while ((mv->registros[IP] & 0x0FFFF) < instruccion_size - 1) {
+        posicion = mv->registros[IP] & 0x0FFFF; // Actualiza la posición en el array de instrucciones
+        mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
+
+        if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
+            t_func0[(instrucciones[posicion].opcode & 0x01F) - 16](mv);
+        else
+            if (instrucciones[posicion].op1.tipo == NINGUNO)
+                t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
+            else
+                t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
     }
+    printf("EAX:%08X\n",mv->registros[A]);
+    printf("BX:%08X\n",mv->registros[B]);
+    printf("CL:%08X\n",mv->registros[C]);
+    printf("DH:%08X\n",mv->registros[D]);
 }
 
 /*
@@ -73,6 +74,7 @@ void valor_operacion(t_operador* op, t_MV mv) {
         op->valor = mv.memoria[dirFisic] & 0x0FF;
         op->valor <<= 8;
         op->valor |= mv.memoria[dirFisic + 1] & 0x0FF;
+        op->valor = (short)op->valor;
         break;
     case REGISTRO:
         op->valor = mv.memoria[dirFisic] & 0x0FF;
@@ -98,15 +100,16 @@ int getValor(t_operador op, t_MV maquina) {
         // Extraer el sector del registro( EAX=00, AL=01, AH=10, AX=11)
         short sectorReg = (op.valor & 0x000C) >> 2;
         short codigoReg = (op.valor & 0x00F0) >> 4; // Extraer el registro
+        
         switch (sectorReg) {
         case 0: // EAX XXXX
             return maquina.registros[codigoReg];
         case 1: // AL 000X
-            return maquina.registros[codigoReg] & 0x000F;
+            return (maquina.registros[codigoReg] & 0x0FF);
         case 2: // AH 00X0
-            return maquina.registros[codigoReg] & 0x00F0;
+            return (maquina.registros[codigoReg] & 0x0FF00);
         case 3: // AX 00XX
-            return maquina.registros[codigoReg] & 0x00FF;
+            return (maquina.registros[codigoReg] & 0x00FF);
         default:
             printf("Tipo de sector de registro invalido. [getValor()] EAX/AX/AL/AH\n");
             break;
@@ -117,17 +120,17 @@ int getValor(t_operador op, t_MV maquina) {
         return op.valor;
     case MEMORIA:
     {
-        short codigoReg = (op.valor >> 4) & 0x000F;
+        short codigoReg = (op.valor >> 4) & 0x0F;
         short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
         int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0000FFFF].base + offsetReg + offset;
-
-        if (dirFisic < maquina.tabla_segmentos[(maquina.registros[CS] >> 16) & 0x0FFFF].base || (dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[CS] >> 16) & 0x0FFFF].tamano)
+        
+        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[DS] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[DS] >> 16) & 0x0FFFF].tamano))
             error(&maquina, 3); // Error: Overflow de memoria
         else {
             for (int i = 0; i < TAM_CELDA; i++) {
-                valor = valor << 8;
-                valor += maquina.memoria[dirFisic + 1] & 0x000000FF;
+                valor <<= 8;
+                valor |= (maquina.memoria[dirFisic + i] & 0x000000FF);
             }
         }
         return valor;
@@ -152,11 +155,11 @@ void setValor(t_operador op, int valor, t_MV* maquina) {
     case MEMORIA:
     {
         short codReg = (op.valor >> 4) & 0x000F;
-        short offsetReg = maquina->memoria[codReg] & 0x0FFFF;
+        short offsetReg = maquina->registros[codReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
-        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0000FFFF].base + offsetReg + offset;
-
-        if (dirFisic < maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].base || (dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[CS] >> 16) & 0x0FFFF].tamano)
+        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
+ 
+        if ((dirFisic < maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].tamano))
             error(maquina, 3); // Error: Overflow de memoria
         else
             for (int i = 0; i < TAM_CELDA; i++) {
@@ -173,13 +176,13 @@ void setValor(t_operador op, int valor, t_MV* maquina) {
             maquina->registros[codigoReg] = valor;
             break;
         case 1: // AL 000X
-            maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x00F0) | (valor & 0x000F);
+            maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0xFFFFFF00) | (valor & 0x000000FF);
             break;
         case 2: // AH 00X0
-            maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x000F) | (valor & 0x00F0);
+            maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0xFFFFFF00FF) | ((valor << 8)& 0x0000FF00);
             break;
         case 3: // AX 00XX
-            maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0x00FF) | (valor & 0x00FF);
+            maquina->registros[codigoReg] = (maquina->registros[codigoReg] & 0xFFFF0000) | (valor & 0x0000FFFF);
             break;
         default:
             printf("Tipo de sector de registro invalido. [setValor()] EAX/AX/AL/AH\n");
@@ -222,7 +225,7 @@ void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* in
     // obtengo el tamaño del segmento de código
     short size_code = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
     // Asigna memoria para las instrucciones
-    *instrucciones = malloc(sizeof(t_operador) * size_code);
+    *instrucciones = malloc(sizeof(t_instruccion) * size_code);
 
     if (*instrucciones == NULL) {
         printf("Error al asignar memoria para el disassembler\n");
@@ -239,7 +242,7 @@ void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* in
             char instruccion = mv->memoria[dirFisic];
 
             int posicion = mv->registros[IP] & 0x0FFFF; // Obtener la posición de la instrucción en el array
-            
+
             mv->registros[IP]++;
 
 

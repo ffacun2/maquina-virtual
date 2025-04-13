@@ -2,6 +2,9 @@
 #define OPERACIONES_H_INCLUDED
 
 #include "mv.h"
+#include <time.h>
+#include <stdlib.h>
+#include <math.h>
 
 // Tipo array de funciones con ningun operando
 typedef void (*t_func0)(t_MV *);
@@ -45,5 +48,7 @@ void NOT(t_MV *maquina, t_operador op1);
 
 // funciones sin operandos
 void STOP(t_MV *maquina);
+
+void inicializo_vector_op (t_func0 func0[], t_func1 func1[], t_func2 func2[]);
 
 #endif // OPERACIONES_H

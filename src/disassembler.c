@@ -62,16 +62,16 @@ void imprimir_operador(t_operador operador) {
         case REGISTRO: {
             switch ((operador.valor >> 2) & 0x03) {
                 case 0:
-                    printf("%s", indentificarRegistro((operador.valor >> 4)&0x0F));
+                    printf("%s", identificarRegistro((operador.valor >> 4) & 0x0F));
                 break;
                 case 1:
-                    printf("%cL", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                    printf("%cL", identificarRegistro((operador.valor >> 4) & 0x0F)[1]);
                 break;
                 case 2:
-                    printf("%cH", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                    printf("%cH", identificarRegistro((operador.valor >> 4) & 0x0F)[1]);
                 break;
                 case 3:
-                    printf("%cX", indentificarRegistro((operador.valor >> 4)&0x0F)[1]);
+                    printf("%cX", identificarRegistro((operador.valor >> 4) & 0x0F)[1]);
                 break;
                 default:
                 break;
@@ -84,12 +84,12 @@ void imprimir_operador(t_operador operador) {
         case MEMORIA: {
             short valor = (operador.valor >> 8) & 0x0FFFF;
             if (valor > 0)
-                printf("[%s + %d]", indentificarRegistro((operador.valor >> 4) & 0x0F), valor);
+                printf("[%s + %d]", identificarRegistro((operador.valor >> 4) & 0x0F), valor);
             else
                 if (valor == 0)
-                    printf("[%s]", indentificarRegistro((operador.valor >> 4) & 0x0F));
+                    printf("[%s]", identificarRegistro((operador.valor >> 4) & 0x0F));
                 else
-                    printf("[%s%d]", indentificarRegistro((operador.valor >> 4) & 0x0F), valor);
+                    printf("[%s%d]", identificarRegistro((operador.valor >> 4) & 0x0F), valor);
                     
             }
             break;
@@ -100,7 +100,7 @@ void imprimir_operador(t_operador operador) {
 //revisar valores negativosss 
 void escribirDisassembler(t_instruccion *instrucciones, int tamano) {
     int posicion = 0;
-
+    
     while ( posicion < tamano) {
         printf("[%04X] %02X ", posicion, instrucciones[posicion].opcode & 0x0FF);
         imprime_byte(instrucciones[posicion].op2.valor, instrucciones[posicion].op2.tipo);

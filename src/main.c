@@ -15,7 +15,6 @@ int verifico_tamano (char tamano);
 */
 int main(int argc, char **argv) {
     t_MV maquina;
-    short flag_d = 0; // Flag para indicar si se debe mostrar el disassembler
     t_instruccion *instrucciones;
     int instruccion_size = 0;
 
@@ -24,10 +23,9 @@ int main(int argc, char **argv) {
         if (lectura_archivo(argv[1], &maquina)){
             genero_array_instrucciones(&maquina, &instrucciones, &instruccion_size);
             if (argc > 2 && strcmp(argv[2], "-d") == 0) {
-                flag_d = 1; // Si se pasa el flag -d, se activa el disassembler
                 escribirDisassembler(instrucciones, instruccion_size);
             }
-            ejecutar_maquina(&maquina, instrucciones, instruccion_size); // Ejecutar la máquina virtual
+             ejecutar_maquina(&maquina, instrucciones, instruccion_size); // Ejecutar la máquina virtual
             free(instrucciones);
         }
     }
