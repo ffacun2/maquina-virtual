@@ -197,13 +197,14 @@ void SYS(t_MV *maquina, t_operador op1)
     char bin[33], *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
-    int i, j, k, x;
+    int i, j, k, x, dirFisica;
     int salidas[32], z[32];
     t_splitter splitter1, splitter2;
     printf("Ejecutando SYS...\n");
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
+    dirFisica = maquina->tabla_segmentos->tamano + maquina->registros[D] & 0xFFFF;
     switch (op1.valor)
     {
     case 1: // Modo lectura
@@ -213,42 +214,42 @@ void SYS(t_MV *maquina, t_operador op1)
         case 1: // Leer en decimal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: ", dirFisica + i * CH);
                 scanf("%d", &x);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
                 for (j = 0; j < CH; j++)
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[CH - j - 1];
+                    maquina->memoria[dirFisica + i * CH + j] = z[CH - j - 1];
             }
             break;
         case 2: // Leer caracter
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: ", dirFisica + i * CH);
                 scanf("%s", str);
                 for (j = 0; j < CH; j++)
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = str[j];
+                    maquina->memoria[dirFisica + i * CH + j] = str[j];
             }
             break;
         case 4: // Leer en octal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: ", dirFisica + i * CH);
                 scanf("%o", &x);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
                 for (j = 0; j < CH; j++)
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[CH - j - 1];
+                    maquina->memoria[dirFisica + i * CH + j] = z[CH - j - 1];
             }
             break;
         case 8: // Leer en hexadecimal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: ", dirFisica + i * CH);
                 scanf("%x", &x);
                 for (j = CH - 1; j >= 0; j--)
                 {
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = x & 0xFF;
+                    maquina->memoria[dirFisica + i * CH + j] = x & 0xFF;
                     x = x >> 8;
                 }
             }
@@ -256,13 +257,13 @@ void SYS(t_MV *maquina, t_operador op1)
         case 16: // Leer en binario
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", maquina->registros[D] + i * CH);
+                printf("[%4X]: ", dirFisica + i * CH);
                 scanf("%s", bin);
                 x = deBinarioStringAInt(bin);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
                 for (j = 0; j < CH; j++)
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[CH - j - 1];
+                    maquina->memoria[dirFisica + i * CH + j] = z[CH - j - 1];
             }
             break;
 
@@ -274,7 +275,7 @@ void SYS(t_MV *maquina, t_operador op1)
     case 2: // Modo escritura
         for (i = 0; i < CL; i++)
         {
-            printf("[%4X]: ", maquina->registros[D] + i * CH);
+            printf("[%4X]: ", dirFisica + i * CH);
             for (k = 4; k >= 0; k--)
                 if (salidas[k])
                     switch (k)
@@ -283,7 +284,7 @@ void SYS(t_MV *maquina, t_operador op1)
                         printf("0b");
                         for (j = 0; j < CH; j++)
                         {
-                            deIntABinarioString(maquina->memoria[maquina->registros[D] + i * CH + j], bin);
+                            deIntABinarioString(maquina->memoria[dirFisica + i * CH + j], bin);
                             printf("%s", bin);
                         }
                         printf(" ");
@@ -291,7 +292,7 @@ void SYS(t_MV *maquina, t_operador op1)
                     case 3: // Escribe hexadecimal
                         printf("0x");
                         for (j = 0; j < CH; j++)
-                            printf("%x", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                            printf("%x", maquina->memoria[dirFisica + i * CH + j]);
                         printf(" ");
                         break;
                     case 2: // Escribe en octal
@@ -300,14 +301,14 @@ void SYS(t_MV *maquina, t_operador op1)
                         for (j = 0; j < CH; j++)
                         {
                             x = x << 8;
-                            x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                            x = x | maquina->memoria[dirFisica + i * CH + j];
                         }
                         printf("%o ", x);
                         break;
                     case 1: // Escribe caracteres
                         for (j = 0; j < CH; j++)
-                            if (isprint(maquina->memoria[maquina->registros[D] + i * CH + j]))
-                                printf("%c", maquina->memoria[maquina->registros[D] + i * CH + j]);
+                            if (isprint(maquina->memoria[dirFisica + i * CH + j]))
+                                printf("%c", maquina->memoria[dirFisica + i * CH + j]);
                             else
                                 printf(".");
                         printf(" ");
@@ -317,7 +318,7 @@ void SYS(t_MV *maquina, t_operador op1)
                         for (j = 0; j < CH; j++)
                         {
                             x = x << 8;
-                            x = x | maquina->memoria[maquina->registros[D] + i * CH + j];
+                            x = x | maquina->memoria[dirFisica + i * CH + j];
                         }
                         printf("%d ", x);
                         break;
