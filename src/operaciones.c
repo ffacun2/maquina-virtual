@@ -214,7 +214,7 @@ void SYS(t_MV *maquina, t_operador op1)
         case 1: // Leer en decimal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", dirFisica + i * CH);
+                printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%d", &x);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
@@ -225,7 +225,7 @@ void SYS(t_MV *maquina, t_operador op1)
         case 2: // Leer caracter
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", dirFisica + i * CH);
+                printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%s", str);
                 for (j = 0; j < CH; j++)
                     maquina->memoria[dirFisica + i * CH + j] = str[j];
@@ -234,7 +234,7 @@ void SYS(t_MV *maquina, t_operador op1)
         case 4: // Leer en octal
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", dirFisica + i * CH);
+                printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%o", &x);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
@@ -257,7 +257,7 @@ void SYS(t_MV *maquina, t_operador op1)
         case 16: // Leer en binario
             for (i = 0; i < CL; i++)
             {
-                printf("[%4X]: ", dirFisica + i * CH);
+                printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%s", bin);
                 x = deBinarioStringAInt(bin);
                 setEntrada(&splitter2, x);
@@ -275,7 +275,7 @@ void SYS(t_MV *maquina, t_operador op1)
     case 2: // Modo escritura
         for (i = 0; i < CL; i++)
         {
-            printf("[%4X]: ", dirFisica + i * CH);
+            printf("[%04X]: ", dirFisica + i * CH);
             for (k = 4; k >= 0; k--)
                 if (salidas[k])
                     switch (k)
