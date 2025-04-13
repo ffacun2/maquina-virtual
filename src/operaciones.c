@@ -204,7 +204,7 @@ void SYS(t_MV *maquina, t_operador op1)
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
-    dirFisica = maquina->tabla_segmentos->tamano + maquina->registros[D] & 0xFFFF;
+    dirFisica = maquina->tabla_segmentos[1].base + maquina->registros[D] & 0xFFFF;
     switch (op1.valor)
     {
     case 1: // Modo lectura
@@ -414,10 +414,10 @@ void NOT(t_MV *maquina, t_operador op1)
     printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
 
-void STOP(t_MV *maquina)
+void STOP(t_MV *mv)
 {
     printf("Ejecutando STOP...\n");
-    exit(0);
+    mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS]>>16)&0x0FFF].tamano;
 }
 
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
