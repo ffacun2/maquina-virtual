@@ -217,8 +217,8 @@ void SYS(t_MV *maquina, t_operador op1)
                 scanf("%d", &x);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
-                for (j = CH - 1; j >= 0; j--)
-                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[j];
+                for (j = 0; j < CH; j++)
+                    maquina->memoria[maquina->registros[D] + i * CH + j] = z[CH - j - 1];
             }
             break;
         case 2: // Leer caracter
