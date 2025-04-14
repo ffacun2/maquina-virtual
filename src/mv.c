@@ -44,8 +44,8 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
             else
                 t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
     }
-    for (int i = -5; i < 4; i++) {
-        printf("[%d]: %02X\n",i,mv->memoria[mv->tabla_segmentos[1].base + (mv->registros[D]&0x0FFFF) + i] );
+    for (int i = 0; i < 12; i++) {
+        printf("[%d]: %02X\n",i,mv->memoria[mv->tabla_segmentos[1].base + i] );
     }
     
 }
@@ -212,7 +212,7 @@ void error(t_MV* mv, int errorCode) {
         printf("Error: Overflow.\n");
         break;
     }
-    mv->registros[IP] = (mv->registros[IP] & 0xF0000) + mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
+    exit(1);
 }
 
 /*
