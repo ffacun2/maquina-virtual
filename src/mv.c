@@ -32,22 +32,22 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
     printf("Ejecutando la maquina virtual...\n");
 
     mv->registros[IP] = mv->registros[CS]; // Inicializa el registro IP con la dirección del segmento de código
-    while ((mv->registros[IP] & 0x0FFFF) < instruccion_size - 1) {
+    while ((mv->registros[IP] & 0x0FFFF) < instruccion_size ) {
         posicion = mv->registros[IP] & 0x0FFFF; // Actualiza la posición en el array de instrucciones
         mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
 
         if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
-            t_func0[(instrucciones[posicion].opcode & 0x01F) - 16](mv);
+            t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
         else
             if (instrucciones[posicion].op1.tipo == NINGUNO)
                 t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
             else
                 t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
     }
-    printf("EAX:%08X\n",mv->registros[A]);
-    printf("BX:%08X\n",mv->registros[B]);
-    printf("CL:%08X\n",mv->registros[C]);
-    printf("DH:%08X\n",mv->registros[D]);
+    for (int i = 0; i < 12; i++) {
+        printf("[%d]: %02X\n",i,mv->memoria[mv->tabla_segmentos[1].base + i] );
+    }
+    
 }
 
 /*
@@ -212,7 +212,7 @@ void error(t_MV* mv, int errorCode) {
         printf("Error: Overflow.\n");
         break;
     }
-    mv->registros[IP] = (mv->registros[IP] & 0xF0000) + mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
+    exit(1);
 }
 
 /*
