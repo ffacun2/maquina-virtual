@@ -186,10 +186,12 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
         srand(time(NULL)); // Inicializar el generador de números aleatorios solo una vez
         iniciado = 1;
     }
-
+  if(a > 0){
     int resultado = rand() % (a + 1);
     setValor(op1, resultado, maquina);
-    printf("Resultado: %d\n", resultado);
+    printf("Resultado: %d\n", resultado);}
+  else
+    printf("RDN no admite negativos\n");   
 }
 
 void SYS(t_MV *maquina, t_operador op1)
@@ -417,7 +419,7 @@ void NOT(t_MV *maquina, t_operador op1)
 void STOP(t_MV *maquina)
 {
     printf("Ejecutando STOP...\n");
-    exit(0);
+    exit(1);
 }
 
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
