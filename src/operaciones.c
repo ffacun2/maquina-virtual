@@ -53,31 +53,31 @@ void deIntABinarioString(int nro, char bin[])
 
 void MOV(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando MOV...\n");
+    // printf("Ejecutando MOV...\n");
     int b = getValor(op2, *maquina);
     setValor(op1, b, maquina);
 }
 void ADD(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando ADD...\n");
+    // printf("Ejecutando ADD...\n");
     int a = getValor(op1, *maquina);
     int b = getValor(op2, *maquina);
     setValor(op1, a + b, maquina);
-    printf("Resultado ADD: %d\n", b + a);
+    // printf("Resultado ADD: %d\n", b + a);
     FuncionCC(maquina, b + a);
 }
 void SUB(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando SUB...\n");
+    // printf("Ejecutando SUB...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     setValor(op1, b - a, maquina);
-    printf("Resultado: %d\n", b - a);
+    // printf("Resultado: %d\n", b - a);
     FuncionCC(maquina, b - a);
 }
 void SWAP(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando SWAP...\n");
+    // printf("Ejecutando SWAP...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     setValor(op1, a, maquina);
@@ -85,23 +85,23 @@ void SWAP(t_MV *maquina, t_operador op1, t_operador op2)
 }
 void MUL(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando MUL...\n");
+    // printf("Ejecutando MUL...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     setValor(op1, b * a, maquina);
-    printf("Resultado: %d\n", b * a);
+    // printf("Resultado: %d\n", b * a);
     FuncionCC(maquina, b * a);
 }
 void DIV(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando DIV...\n");
+    // printf("Ejecutando DIV...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     if (a != 0)
     {
         setValor(op1, b / a, maquina);
         maquina->registros[AC] = b % a; // resto
-        printf("Resultado: cosciente %d resto %d\n", b / a, b % a);
+        // printf("Resultado: cosciente %d resto %d\n", b / a, b % a);
         FuncionCC(maquina, b / a);
     }
     else
@@ -109,76 +109,76 @@ void DIV(t_MV *maquina, t_operador op1, t_operador op2)
 }
 void CMP(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando CMP...\n");
+    // printf("Ejecutando CMP...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     int resto = b - a;
     FuncionCC(maquina, resto);
-    printf("Resultado de la comparacion: %d (CC = %d)\n", resto, maquina->registros[CC]);
+    // printf("Resultado de la comparacion: %d (CC = %d)\n", resto, maquina->registros[CC]);
 }
 void SHL(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando SHL...\n");
+    // printf("Ejecutando SHL...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     int resultado = b << a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d\n", resultado);
+    // printf("Resultado: %d\n", resultado);
 }
 void SHR(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando SHR...\n");
+    // printf("Ejecutando SHR...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     int resultado = b >> a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d\n", resultado);
+    // printf("Resultado: %d\n", resultado);
 }
 void AND(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando AND...\n");
+    // printf("Ejecutando AND...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     int resultado = b & a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d (0x%X)\n", resultado, resultado);
+    // printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
 void OR(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando OR...\n");
+    // printf("Ejecutando OR...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     int resultado = b | a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d (0x%X)\n", resultado, resultado);
+    // printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
 void XOR(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando XOR...\n");
+    // printf("Ejecutando XOR...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
     int resultado = b ^ a;
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d (0x%X)\n", resultado, resultado);
+    // printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
 void LDL(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando LDL...\n");
+    // printf("Ejecutando LDL...\n");
     setValor(op1, (getValor(op1, *maquina) & 0xFFFF0000) | getValor(op2, *maquina), maquina);
 }
 void LDH(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando LDH...\n");
+    // printf("Ejecutando LDH...\n");
     setValor(op1, (getValor(op1, *maquina) & 0x0000FFFF) | (getValor(op2, *maquina) << 16), maquina);
 }
 void RND(t_MV *maquina, t_operador op1, t_operador op2)
 {
-    printf("Ejecutando RND...\n");
+    // printf("Ejecutando RND...\n");
 
     int a = getValor(op2, *maquina);
 
@@ -192,7 +192,7 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
     {
         int resultado = rand() % (a + 1);
         setValor(op1, resultado, maquina);
-        printf("Resultado: %d\n", resultado);
+        // printf("Resultado: %d\n", resultado);
     }
     else
         printf("RDN no admite negativos\n");
@@ -206,7 +206,7 @@ void SYS(t_MV *maquina, t_operador op1)
     int i, j, k, x, dirFisica;
     int salidas[32], z[32];
     t_splitter splitter1, splitter2;
-    printf("Ejecutando SYS...\n");
+    // printf("Ejecutando SYS...\n");
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
@@ -341,19 +341,19 @@ void Salto(t_MV *mv, t_operador op1)
     int valor = getValor(op1, *mv);                                                    // El valor del operando es la direccion logica a la que queremos saltar         // Extraer offset (los 16 bits bajos)
     short pos = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base + valor; // Verificar que esté dentro del segmento de codigo
     short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
-    printf("valor salto: %04X, posicion:%04X, size:%04X\n", valor, pos, size);
+    // printf("valor salto: %04X, posicion:%04X, size:%04X\n", valor, pos, size);
 
     if (pos > size)
         error(mv, 3);
     else
     {
         mv->registros[IP] = pos;
-        printf("Salto a direccion : 0x%04X\n", pos);
+        // printf("Salto a direccion : 0x%04X\n", pos);
     }
 }
 void JMP(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JMP...\n");
+    // printf("Ejecutando JMP...\n");
     if (op1.tipo != INMEDIATO && op1.tipo != MEMORIA)
         printf("Error: JMP solo admite inmediatos o direcciones logicas (tipo MEMORIA)\n");
     else
@@ -361,68 +361,68 @@ void JMP(t_MV *maquina, t_operador op1)
 }
 void JZ(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JZ...\n");
+    // printf("Ejecutando JZ...\n");
 
     if (maquina->registros[CC] & 0x40000000)
         Salto(maquina, op1);
-    else
-        printf("No se cumple la condicion para el salto\n");
+    // else
+    //  printf("No se cumple la condicion para el salto\n");
 }
 void JP(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JP...\n");
+    // printf("Ejecutando JP...\n");
     if (maquina->registros[CC] == 0)
         Salto(maquina, op1);
-    else
-        printf("No se cumple la condicion para el salto\n");
+    // else
+    //     printf("No se cumple la condicion para el salto\n");
 }
 void JN(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JN...\n");
+    // printf("Ejecutando JN...\n");
     if (maquina->registros[CC] & 0x80000000)
         Salto(maquina, op1);
-    else
-        printf("No se cumple la condicion para el salto\n");
+    // else
+    //     printf("No se cumple la condicion para el salto\n");
 }
 void JNZ(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JNZ...\n");
+    // printf("Ejecutando JNZ...\n");
     if (!(maquina->registros[CC] & 0x40000000))
         Salto(maquina, op1);
-    else
-        printf("No se cumple la condicion para el salto\n");
+    // else
+    //     printf("No se cumple la condicion para el salto\n");
 }
 void JNP(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JNP...\n");
+    // printf("Ejecutando JNP...\n");
     if (!(maquina->registros[CC] == 0))
         Salto(maquina, op1);
-    else
-        printf("No se cumple la condicion para el salto\n");
+    // else
+    //     printf("No se cumple la condicion para el salto\n");
 }
 void JNN(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando JNN...\n");
+    // printf("Ejecutando JNN...\n");
     if (!(maquina->registros[CC] & 0x80000000))
         Salto(maquina, op1);
-    else
-        printf("No se cumple la condicion para el salto\n");
+    // else
+    //     printf("No se cumple la condicion para el salto\n");
 }
 void NOT(t_MV *maquina, t_operador op1)
 {
-    printf("Ejecutando NOT...\n");
+    // printf("Ejecutando NOT...\n");
 
     int b = getValor(op1, *maquina);
     int resultado = ~b; // negacion bit a bit
 
     setValor(op1, resultado, maquina);
     FuncionCC(maquina, resultado);
-    printf("Resultado: %d (0x%X)\n", resultado, resultado);
+    // printf("Resultado: %d (0x%X)\n", resultado, resultado);
 }
 
 void STOP(t_MV *mv)
 {
-    printf("Ejecutando STOP...\n");
+    // printf("Ejecutando STOP...\n");
     exit(1);
 }
 
