@@ -46,10 +46,10 @@ void ejecutar_maquina(t_MV *mv, t_instruccion *instrucciones, int instruccion_si
         else
             t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
     }
-    // for (int i = 0; i < 12; i++)
-    // {
-    //     printf("[%d]: %02X\n", i, mv->memoria[mv->tabla_segmentos[1].base + i]);
-    // }
+    for (int i = 0; i < 12; i++)
+    {
+        printf("[%d]: %02X\n", i, mv->memoria[mv->tabla_segmentos[1].base + i]);
+    }
 }
 
 /*
