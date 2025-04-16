@@ -11,8 +11,6 @@ Integrantes del grupa 0A:
 
 <h2>&#128366 Manual de uso</h2>
 <p>Para ejecutar un archivo de extensión .vmx deberá escribir lo siguiente en la terminal:</p>
-```bash
-./main archivo.vmx [-d]
-```
+<pre>./main archivo.vmx [-d]</pre>
 <p>Donde main.exe es el archivo ejecutable que se encuetra dentro de la carpeta src de nuestro repositorio; archivo.vmx es el archivo binario a ejecutar o, en caso que main.exe
   y el archivo no estén en el mismo directorio, sería la ruta relativa al archivo desde main, y -d (opcional) es el flag que indica que muestre el código disassembler.</p>
