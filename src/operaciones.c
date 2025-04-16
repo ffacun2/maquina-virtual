@@ -268,7 +268,7 @@ void SYS(t_MV* maquina, t_operador op1) {
                     x = 0;
                     for (j = 0; j < CH; j++) {
                         x = x << 8;
-                        x = x | maquina->memoria[dirFisica + i * CH + j];
+                        x |= (maquina->memoria[dirFisica + i * CH + j] & 0x0FF);
                     }
                     switch (k) {
                     case 4: // Escribe binario
