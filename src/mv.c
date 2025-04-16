@@ -31,7 +31,7 @@ void ejecutar_maquina(t_MV *mv, t_instruccion *instrucciones, int instruccion_si
     int posicion = 0;
 
     inicializo_vector_op(t_func0, t_func1, t_func2); // Inicializa los vectores de funciones
-    printf("Ejecutando la maquina virtual...\n");
+    // printf("Ejecutando la maquina virtual...\n");
 
     mv->registros[IP] = mv->registros[CS]; // Inicializa el registro IP con la dirección del segmento de código
     while ((mv->registros[IP] & 0x0FFFF) < instruccion_size)
@@ -46,10 +46,10 @@ void ejecutar_maquina(t_MV *mv, t_instruccion *instrucciones, int instruccion_si
         else
             t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
     }
-    for (int i = 0; i < 12; i++)
-    {
-        printf("[%d]: %02X\n", i, mv->memoria[mv->tabla_segmentos[1].base + i]);
-    }
+    // for (int i = 0; i < 12; i++)
+    // {
+    //     printf("[%d]: %02X\n", i, mv->memoria[mv->tabla_segmentos[1].base + i]);
+    // }
 }
 
 /*
