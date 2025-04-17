@@ -44,7 +44,7 @@ int deBinarioStringAInt(char bin[])
 void deIntABinarioString(int nro, char bin[])
 {
     bin[32] = '\0';
-    for (int i = 7; i >= 0; i--)
+    for (int i = 31; i >= 0; i--)
     {
         bin[i] = '0' + (nro & 0x1);
         nro = nro >> 1;
