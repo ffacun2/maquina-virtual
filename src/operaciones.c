@@ -200,9 +200,10 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
-    char *bin[9], *str;
+    char bin[9], *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
+    char res[CH * 8 + 1];
     int i, j, k, x, dirFisica;
     int salidas[32], z[32];
     t_splitter splitter1, splitter2;
@@ -264,8 +265,8 @@ void SYS(t_MV *maquina, t_operador op1)
             for (i = 0; i < CL; i++)
             {
                 printf("[%04X]: ", dirFisica + i * CH);
-                scanf("%s", bin);
-                x = deBinarioStringAInt(bin);
+                scanf("%s", res);
+                x = deBinarioStringAInt(res);
                 setEntrada(&splitter2, x);
                 getSalidas(splitter2, z);
                 for (j = 0; j < CH; j++)
