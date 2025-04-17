@@ -200,7 +200,7 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
-    char bin[9], *str;
+    char *bin, *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, k, x, dirFisica;
