@@ -9,12 +9,14 @@
 // Con int no pasa.
 // Hay valores negativos en inmediatos y offset
 
-void FuncionCC(t_MV* maquina, int resultado) {                               // actualiza CC
+void FuncionCC(t_MV *maquina, int resultado)
+{                               // actualiza CC
     maquina->registros[CC] = 0; // reseteo CC
 
     if (resultado == 0)
         maquina->registros[CC] = 0x40000000;
-    else {
+    else
+    {
         if (resultado < 0)
             maquina->registros[CC] = 0x80000000;
         else
@@ -22,11 +24,14 @@ void FuncionCC(t_MV* maquina, int resultado) {                               // 
     }
 }
 
-int deBinarioStringAInt(char bin[]) {
+int deBinarioStringAInt(char bin[])
+{
     int exponente = 0;
     int resultado = 0;
-    for (int i = strlen(bin) - 1; i >= 0; i--) {
-        if (bin[i] != '0' && bin[i] != '1') {
+    for (int i = strlen(bin) - 1; i >= 0; i--)
+    {
+        if (bin[i] != '0' && bin[i] != '1')
+        {
             printf("ERROR: se pidio un numero binario y se ingreso cualquier cosa");
             break;
         }
@@ -36,9 +41,11 @@ int deBinarioStringAInt(char bin[]) {
     return resultado;
 }
 
-void deIntABinarioString(int nro, char bin[]) {
-    bin[32] = '\0';
-    for (int i = 31; i >= 0; i--) {
+void deIntABinarioString(int nro, char bin[])
+{
+    bin[8] = '\0';
+    for (int i = 31; i >= 0; i--)
+    {
         bin[i] = '0' + (nro & 0x1);
         nro = nro >> 1;
     }
@@ -90,7 +97,8 @@ void DIV(t_MV *maquina, t_operador op1, t_operador op2)
     // printf("Ejecutando DIV...\n");
     int b = getValor(op1, *maquina);
     int a = getValor(op2, *maquina);
-    if (a != 0) {
+    if (a != 0)
+    {
         setValor(op1, b / a, maquina);
         maquina->registros[AC] = b % a; // resto
         // printf("Resultado: cosciente %d resto %d\n", b / a, b % a);
@@ -175,11 +183,13 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
     int a = getValor(op2, *maquina);
 
     static int iniciado = 0;
-    if (!iniciado) {
+    if (!iniciado)
+    {
         srand(time(NULL)); // Inicializar el generador de números aleatorios solo una vez
         iniciado = 1;
     }
-    if (a > 0) {
+    if (a > 0)
+    {
         int resultado = rand() % (a + 1);
         setValor(op1, resultado, maquina);
         // printf("Resultado: %d\n", resultado);
@@ -188,8 +198,9 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
         printf("RDN no admite negativos\n");
 }
 
-void SYS(t_MV* maquina, t_operador op1) {
-    char bin[33], * str;
+void SYS(t_MV *maquina, t_operador op1)
+{
+    char bin[9], *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, k, x, dirFisica;
@@ -200,13 +211,15 @@ void SYS(t_MV* maquina, t_operador op1) {
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
     dirFisica = maquina->tabla_segmentos[1].base + maquina->registros[D] & 0xFFFF;
-    switch (op1.valor) {
+    switch (op1.valor)
+    {
     case 1: // Modo lectura
 
         switch (maquina->registros[A] & 0xFF) // AL
         {
         case 1: // Leer en decimal
-            for (i = 0; i < CL; i++) {
+            for (i = 0; i < CL; i++)
+            {
                 printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%d", &x);
                 setEntrada(&splitter2, x);
@@ -216,7 +229,8 @@ void SYS(t_MV* maquina, t_operador op1) {
             }
             break;
         case 2: // Leer caracter
-            for (i = 0; i < CL; i++) {
+            for (i = 0; i < CL; i++)
+            {
                 printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%s", str);
                 for (j = 0; j < CH; j++)
@@ -224,7 +238,8 @@ void SYS(t_MV* maquina, t_operador op1) {
             }
             break;
         case 4: // Leer en octal
-            for (i = 0; i < CL; i++) {
+            for (i = 0; i < CL; i++)
+            {
                 printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%o", &x);
                 setEntrada(&splitter2, x);
@@ -234,17 +249,20 @@ void SYS(t_MV* maquina, t_operador op1) {
             }
             break;
         case 8: // Leer en hexadecimal
-            for (i = 0; i < CL; i++) {
+            for (i = 0; i < CL; i++)
+            {
                 printf("[%4X]: ", dirFisica + i * CH);
                 scanf("%x", &x);
-                for (j = CH - 1; j >= 0; j--) {
+                for (j = CH - 1; j >= 0; j--)
+                {
                     maquina->memoria[dirFisica + i * CH + j] = x & 0xFF;
                     x = x >> 8;
                 }
             }
             break;
         case 16: // Leer en binario
-            for (i = 0; i < CL; i++) {
+            for (i = 0; i < CL; i++)
+            {
                 printf("[%04X]: ", dirFisica + i * CH);
                 scanf("%s", bin);
                 x = deBinarioStringAInt(bin);
@@ -261,20 +279,24 @@ void SYS(t_MV* maquina, t_operador op1) {
 
         break;
     case 2: // Modo escritura
-        for (i = 0; i < CL; i++) {
+        for (i = 0; i < CL; i++)
+        {
             printf("[%04X]: ", dirFisica + i * CH);
             for (k = 4; k >= 0; k--)
-                if (salidas[k]){
+                if (salidas[k])
+                {
                     x = 0;
-                    for (j = 0; j < CH; j++) {
+                    for (j = 0; j < CH; j++)
+                    {
                         x = x << 8;
                         x |= (maquina->memoria[dirFisica + i * CH + j] & 0x0FF);
                     }
-                    switch (k) {
+                    switch (k)
+                    {
                     case 4: // Escribe binario
                         printf("0b");
-                            deIntABinarioString(x, bin);
-                            printf("%s", bin);
+                        deIntABinarioString(x, bin);
+                        printf("%s", bin);
                         printf(" ");
                         break;
                     case 3: // Escribe hexadecimal
@@ -284,10 +306,10 @@ void SYS(t_MV* maquina, t_operador op1) {
                         printf("0o%o ", x);
                         break;
                     case 1: // Escribe caracteres
-                            if (isprint(x))
-                                printf("%c ", x);
-                            else
-                                printf(". ");
+                        if (isprint(x))
+                            printf("%c ", x);
+                        else
+                            printf(". ");
                         break;
                     case 0: // Escribe decimal
                         printf("%d ", x);
@@ -301,7 +323,8 @@ void SYS(t_MV* maquina, t_operador op1) {
         }
     }
 }
-void Salto(t_MV* mv, t_operador op1) {                                                                                      // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
+void Salto(t_MV *mv, t_operador op1)
+{                                                                                      // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
     int valor = getValor(op1, *mv);                                                    // El valor del operando es la direccion logica a la que queremos saltar         // Extraer offset (los 16 bits bajos)
     short pos = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base + valor; // Verificar que esté dentro del segmento de codigo
     short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
@@ -309,7 +332,8 @@ void Salto(t_MV* mv, t_operador op1) {                                          
 
     if (pos > size)
         error(mv, 3);
-    else {
+    else
+    {
         mv->registros[IP] = pos;
         // printf("Salto a direccion : 0x%04X\n", pos);
     }
@@ -389,7 +413,8 @@ void STOP(t_MV *mv)
     exit(1);
 }
 
-void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[]) {
+void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
+{
     func0[0] = &STOP;
 
     func1[0] = &SYS;
