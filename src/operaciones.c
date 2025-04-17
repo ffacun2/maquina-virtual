@@ -44,7 +44,7 @@ int deBinarioStringAInt(char bin[])
 void deIntABinarioString(int nro, char bin[])
 {
     bin[8] = '\0';
-    for (int i = 31; i >= 0; i--)
+    for (int i = 7; i >= 0; i--)
     {
         bin[i] = '0' + (nro & 0x1);
         nro = nro >> 1;
@@ -200,7 +200,7 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
-    char *bin, *str;
+    char *bin[9], *str;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, k, x, dirFisica;
