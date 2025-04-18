@@ -98,7 +98,7 @@ void valor_operacion(t_operador *op, t_MV mv)
 */
 int getValor(t_operador op, t_MV maquina)
 {
-    short valor = 0;
+    int valor = 0;
     switch (op.tipo)
     {
     case REGISTRO:
