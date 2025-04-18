@@ -50,7 +50,7 @@ int lectura_archivo(char *nombre_archivo, t_MV *maquina)
 {
     FILE *archivo = fopen(nombre_archivo, "rb");
     char header[9];
-    char high, low;
+    short high, low;
     short tamano;
     short lenNombreArchivo = strlen(nombre_archivo);
 
@@ -82,10 +82,10 @@ int lectura_archivo(char *nombre_archivo, t_MV *maquina)
     else
     {
         // Si el header es correcto, leo tamaño de datos e inicializo la máquina virtual
-        high = header[6];                        // Leo el byte alto del tamaño de datos
-        low = header[7];                         // Leo el byte bajo del tamaño de datos
-        tamano = (short int)((high << 8) | low); // armo el tamaño de datos
-
+        high = header[6] & 0x0FF;                        // Leo el byte alto del tamaño de datos
+        low = header[7] & 0x0FF;                         // Leo el byte bajo del tamaño de datos
+        tamano = ((high << 8) | low); // armo el tamaño de datos
+        
         if (verifico_tamano(tamano) == 0)
         {
             printf("El tamaño de datos es incorrecto, %d\n", tamano);
