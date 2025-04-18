@@ -2,7 +2,7 @@
 <figcaption>Un trabajo para la materia <b>Arquitectura de Computadoras - Facultad de Ingeniería, UNMDP</b></figcaption>
 
 <h2>&#128100 Sobre nosotros</h2>
-Integrantes del grupa 0A:
+Integrantes del grupo 0A:
 <ul>
   <li>CRIADO, Facundo (@ffacun2)</li>
   <li>EFSTRATIADIS, Carlos Andrés (@carluandraster)</li>
