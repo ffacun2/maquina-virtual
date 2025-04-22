@@ -35,6 +35,8 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
     while ((mv->registros[IP] & 0x0FFFF) < instruccion_size) {
         posicion = mv->registros[IP] & 0x0FFFF;                                                       // Actualiza la posición en el array de instrucciones
         
+        codOperacionValido(instrucciones[posicion].opcode & 0x1F,*mv);
+
         if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
         t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
         else if (instrucciones[posicion].op1.tipo == NINGUNO)
@@ -191,6 +193,15 @@ void setValor(t_operador op, int valor, t_MV* maquina) {
     }
     break;
     }
+}
+
+/*
+    Verifica si el codigo de operacion se encuentra dentro de los disponibles
+    En caso de que no se encuentre se lanza -> Error: Operacion no valida y se corta la ejecucion
+*/
+void codOperacionValido(int cod_op, t_MV mv){
+    if ( !(cod_op >= 0x10 && cod_op <= 0x1E) || !(cod_op >= 0x00 && cod_op <= 0x08) || cod_op != 0x0F)
+        error(&mv,1);
 }
 
 /*
