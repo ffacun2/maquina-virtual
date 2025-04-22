@@ -77,5 +77,4 @@ void codOperacionValido(int cod_op, t_MV mv);
 void error(t_MV *mv, int errorCode);
 void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size);
 
-
 #endif // MV_H_INCLUDED

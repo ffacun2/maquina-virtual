@@ -33,19 +33,19 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
 
     mv->registros[IP] = mv->registros[CS]; // Inicializa el registro IP con la dirección del segmento de código
     while ((mv->registros[IP] & 0x0FFFF) < instruccion_size) {
-        posicion = mv->registros[IP] & 0x0FFFF;                                                       // Actualiza la posición en el array de instrucciones
-        
-        codOperacionValido(instrucciones[posicion].opcode & 0x1F,*mv);
+        posicion = mv->registros[IP] & 0x0FFFF;
+        mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
 
+        codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv);
+        
         if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
-        t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
+            t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
         else if (instrucciones[posicion].op1.tipo == NINGUNO)
-        t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
+            t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
         else
             t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
             
-        mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
-        }
+    }
    
 }
 
@@ -113,6 +113,7 @@ int getValor(t_operador op, t_MV maquina) {
             valor = (maquina.registros[codigoReg] & 0x00FFFF) << 16;
             return valor >> 16;
         default:
+        printf("op:%d valor:%06X\n",op.tipo,op.valor);      
             printf("Tipo de sector de registro invalido. [getValor()] EAX/AX/AL/AH\n");
             break;
         }
@@ -199,9 +200,9 @@ void setValor(t_operador op, int valor, t_MV* maquina) {
     Verifica si el codigo de operacion se encuentra dentro de los disponibles
     En caso de que no se encuentre se lanza -> Error: Operacion no valida y se corta la ejecucion
 */
-void codOperacionValido(int cod_op, t_MV mv){
-    if ( !(cod_op >= 0x10 && cod_op <= 0x1E) || !(cod_op >= 0x00 && cod_op <= 0x08) || cod_op != 0x0F)
-        error(&mv,1);
+void codOperacionValido(int cod_op, t_MV mv) {
+    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || cod_op == 0x0F))
+        error(&mv, 1);
 }
 
 /*
