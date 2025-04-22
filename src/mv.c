@@ -34,15 +34,16 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
     mv->registros[IP] = mv->registros[CS]; // Inicializa el registro IP con la dirección del segmento de código
     while ((mv->registros[IP] & 0x0FFFF) < instruccion_size) {
         posicion = mv->registros[IP] & 0x0FFFF;                                                       // Actualiza la posición en el array de instrucciones
-        mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
-
+        
         if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
-            t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
+        t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
         else if (instrucciones[posicion].op1.tipo == NINGUNO)
-            t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
+        t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
         else
             t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
-    }
+            
+        mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
+        }
    
 }
 
