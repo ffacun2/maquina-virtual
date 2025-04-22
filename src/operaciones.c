@@ -169,7 +169,7 @@ void XOR(t_MV *maquina, t_operador op1, t_operador op2)
 void LDL(t_MV *maquina, t_operador op1, t_operador op2)
 {
     // printf("Ejecutando LDL...\n");
-    setValor(op1, (getValor(op1, *maquina) & 0xFFFF0000) | getValor(op2, *maquina), maquina);
+    setValor(op1, (getValor(op1, *maquina) & 0xFFFF0000) | (getValor(op2, *maquina) & 0x0000FFFF), maquina);
 }
 void LDH(t_MV *maquina, t_operador op1, t_operador op2)
 {
