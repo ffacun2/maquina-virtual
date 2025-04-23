@@ -300,10 +300,10 @@ void SYS(t_MV *maquina, t_operador op1)
                         printf(" ");
                         break;
                     case 3: // Escribe hexadecimal
-                        printf("0x%x ", x);
+                        printf("0x%08X ", x);
                         break;
                     case 2: // Escribe en octal
-                        printf("0o%o ", x);
+                        printf("0o%011o ", x);
                         break;
                     case 1: // Escribe caracteres
                         if (x > 0  && x < 255 && isprint(x))
