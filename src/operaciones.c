@@ -306,7 +306,7 @@ void SYS(t_MV *maquina, t_operador op1)
                         printf("0o%o ", x);
                         break;
                     case 1: // Escribe caracteres
-                        if (isprint(x))
+                        if (x > 0  && x < 255 && isprint(x))
                             printf("%c ", x);
                         else
                             printf(". ");
