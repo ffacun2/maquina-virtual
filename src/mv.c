@@ -46,13 +46,15 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
         }
         else {
             codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv);
-            if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
+            if (mv->flag_ejecucion) {
+                if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
                 t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
-            else if (instrucciones[posicion].op1.tipo == NINGUNO)
+                else if (instrucciones[posicion].op1.tipo == NINGUNO)
                 t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
-            else
+                else
                 t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
             }           
+        }
     }
    
 }
@@ -220,18 +222,18 @@ void codOperacionValido(int cod_op, t_MV mv) {
 */
 void error(t_MV* mv, int errorCode) {
     switch (errorCode) {
-    case 1:
-        printf("Error: Operacion no valida.\n");
-        break;
-    case 2:
-        printf("Error: Division por cero.\n");
-        break;
-    case 3:
-        printf("Error: Overflow.\n");
-        break;
-    case 4:
-        printf("Error: Falla de segmento en IP\n");
-        break;
+        case 1:
+            printf("Error: Operacion no valida.\n");
+            break;
+        case 2:
+            printf("Error: Division por cero.\n");
+            break;
+        case 3:
+            printf("Error: Overflow.\n");
+            break;
+        case 4:
+            printf("Error: Falla de segmento en IP\n");
+            break;
     }
     mv->flag_ejecucion = 0;
 }
