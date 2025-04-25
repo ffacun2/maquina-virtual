@@ -229,7 +229,7 @@ void error(t_MV* mv, int errorCode) {
             printf("Error: Division por cero.\n");
             break;
         case 3:
-            printf("Error: Overflow.\n");
+            printf("Error: Falla de segmento.\n");
             break;
         case 4:
             printf("Error: Falla de segmento en IP\n");
