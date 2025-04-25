@@ -45,6 +45,7 @@ typedef struct MV
     char memoria[TAMANO_MEMORIA];
     int registros[CANT_REGISTROS];
     t_tabla_segmento tabla_segmentos[CANT_SEGMENTOS];
+    int flag_ejecucion;
 } t_MV;
 
 typedef enum

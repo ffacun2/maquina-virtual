@@ -410,8 +410,8 @@ void NOT(t_MV *maquina, t_operador op1)
 void STOP(t_MV *mv)
 {
     // printf("Ejecutando STOP...\n");
-    // exit(1);
-    mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS]>>16) & 0x0FFFF].tamano;
+    mv->flag_ejecucion = 0;
+    mv->registros[IP] |= mv->tabla_segmentos[(mv->registros[CS]>>16) & 0x0FFFF].tamano & 0x0FFFF;
 }
 
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])

@@ -27,24 +27,32 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
     t_func1 t_func1[10];
     t_func2 t_func2[15];
     int posicion = 0;
-
+    
+    
     inicializo_vector_op(t_func0, t_func1, t_func2); // Inicializa los vectores de funciones
-    // printf("Ejecutando la maquina virtual...\n");
-
     mv->registros[IP] = mv->registros[CS]; // Inicializa el registro IP con la dirección del segmento de código
-    while ((mv->registros[IP] & 0x0FFFF) < instruccion_size) {
+    mv->flag_ejecucion = 1;
+    
+    while (mv->flag_ejecucion) {
         posicion = mv->registros[IP] & 0x0FFFF;
         mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
-
-        codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv);
         
-        if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
-            t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
-        else if (instrucciones[posicion].op1.tipo == NINGUNO)
-            t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
-        else
-            t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
-            
+        
+        if (((mv->registros[IP] & 0x0FFFF) > mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano) 
+            || ((mv->registros[IP] & 0x0FFFF) < mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base)) 
+        {
+            mv->flag_ejecucion = 0;
+            error(mv,4);
+        }
+        else {
+            codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv);
+            if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
+                t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
+            else if (instrucciones[posicion].op1.tipo == NINGUNO)
+                t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
+            else
+                t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
+            }           
     }
    
 }
@@ -221,8 +229,11 @@ void error(t_MV* mv, int errorCode) {
     case 3:
         printf("Error: Overflow.\n");
         break;
+    case 4:
+        printf("Error: Falla de segmento en IP\n");
+        break;
     }
-    exit(1);
+    mv->flag_ejecucion = 0;
 }
 
 /*
