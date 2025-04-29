@@ -306,10 +306,14 @@ void SYS(t_MV *maquina, t_operador op1)
                         printf("0o%011o ", x);
                         break;
                     case 1: // Escribe caracteres
-                        if (x > 0  && x < 255 && isprint(x))
-                            printf("%c ", x);
-                        else
-                            printf(". ");
+                        for (j = 0; j < CH; j++){
+                            x = maquina->memoria[dirFisica + i * CH + j] & 0x00FF;
+                            if (x > 0  && x < 255 && isprint(x))
+                            printf("%c", x);
+                            else
+                            printf(".");
+                        }
+                        printf(" ");
                         break;
                     case 0: // Escribe decimal
                         printf("%d ", x);
@@ -411,7 +415,7 @@ void STOP(t_MV *mv)
 {
     // printf("Ejecutando STOP...\n");
     mv->flag_ejecucion = 0;
-    mv->registros[IP] |= mv->tabla_segmentos[(mv->registros[CS]>>16) & 0x0FFFF].tamano & 0x0FFFF;
+    mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS]>>16) & 0x0FFFF].tamano & 0x0FFFF;
 }
 
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
