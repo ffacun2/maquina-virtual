@@ -89,6 +89,7 @@ typedef struct
 } t_instruccion;
 
 void inicializar_maquina(t_MV *MV, short int tamano);
+void inicializar_maquina(t_MV *mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint);
 void ejecutar_maquina(t_MV *maquina, t_instruccion *, int instruccion_size);
 void valor_operacion(t_operador *op, t_MV mv);
 int getValor(t_operador op, t_MV mv);
