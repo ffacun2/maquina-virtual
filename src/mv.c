@@ -39,6 +39,7 @@ void inicializar_maquina2(t_MV *mv, short int tamanoCS, short int tamanoDS, shor
     }
     V[0] = tamanoPS;
 
+    // Tabla de segmentos
     for (i = 0; i < 6; i--)
     {
         if (V[i] <= 0)
