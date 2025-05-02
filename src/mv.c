@@ -7,6 +7,8 @@
     Inicializa la máquina virtual, configurando los registros y la tabla de segmentos.
     Se establece el tamaño del segmento de datos y el segmento de código, así como la base
 */
+
+// Version 1
 void inicializar_maquina(t_MV *mv, short int tamano)
 {
     mv->registros[CS] = 0x00000000;
@@ -16,6 +18,12 @@ void inicializar_maquina(t_MV *mv, short int tamano)
     mv->tabla_segmentos[(mv->registros[DS] >> 16) & 0x0FFFF].base = tamano;
     mv->tabla_segmentos[(mv->registros[DS] >> 16) & 0x0FFFF].tamano = TAMANO_MEMORIA - tamano;
     mv->registros[IP] = mv->registros[CS];
+}
+
+// Version 2
+void inicializar_maquina2(t_MV *mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint)
+{
+    // Registros de segmento
 }
 
 /*
