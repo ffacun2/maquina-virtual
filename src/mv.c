@@ -22,14 +22,36 @@ void inicializar_maquina(t_MV *mv, short int tamano)
 }
 
 // Version 2
-void inicializar_maquina2(t_MV *mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint)
+void inicializar_maquina2(t_MV *mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint, int memoria)
 {
     int i, acumulador = 0;
+    int b = 0;
+    short V[] = {0, tamanoKS, tamanoCS, tamanoDS, tamanoES, tamanoSS};
 
-    for (i = 0; i < CANT_SEGMENTOS; i++)
+    // Tamaño del Param Segment
+    short int tamanoPS = memoria;
+    for (i = 1; i < 6; i++)
     {
-        mv->tabla_segmentos[i].base = acumulador;
+        if (V[i] > 0)
+        {
+            tamanoPS -= V[i];
         }
+    }
+    V[0] = tamanoPS;
+
+    for (i = 0; i < 6; i--)
+    {
+        if (V[i] <= 0)
+        {
+            mv->tabla_segmentos[i].base = mv->tabla_segmentos[i].tamano = -1;
+        }
+        else
+        {
+            mv->tabla_segmentos[i].base = b;
+            b++;
+            mv->tabla_segmentos[i].tamano = V[i];
+        }
+    }
 }
 
 /*
