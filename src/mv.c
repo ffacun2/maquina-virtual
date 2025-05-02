@@ -3,6 +3,7 @@
 #include "disassembler.h"
 #include <stdio.h>
 #include <string.h>
+#define nulo -1
 /*
     Inicializa la máquina virtual, configurando los registros y la tabla de segmentos.
     Se establece el tamaño del segmento de datos y el segmento de código, así como la base
@@ -23,7 +24,12 @@ void inicializar_maquina(t_MV *mv, short int tamano)
 // Version 2
 void inicializar_maquina2(t_MV *mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint)
 {
-    // Registros de segmento
+    int i, acumulador = 0;
+
+    for (i = 0; i < CANT_SEGMENTOS; i++)
+    {
+        mv->tabla_segmentos[i].base = acumulador;
+        }
 }
 
 /*
