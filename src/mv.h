@@ -15,16 +15,35 @@
 
 enum
 {
+    // Segmentos
+
     // Code Segment
     CS = 0,
     // Data Segment
     DS = 1,
+    // Extra Segment
+    ES = 2,
+    // Stack Segment
+    SS = 3,
+    // Const Segmet
+    KS = 4,
+
     // Instruction Pointer
     IP = 5,
+
+    // Pila de ejecución
+
+    // Stack Pointer
+    SP = 6,
+    // Base Pointer
+    BP = 7,
+
     // condition code
     CC = 8,
+
     // acumulador
     AC = 9,
+
     // registros de proposito general EAX ...
     A = 10,
     B = 11,
