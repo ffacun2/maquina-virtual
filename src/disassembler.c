@@ -153,6 +153,20 @@ void imprimir_operador(t_operador operador)
     case MEMORIA:
     {
         short valor = (operador.valor >> 8) & 0x0FFFF;
+        short tamano = operador.valor & 0x3;
+        switch (tamano)
+        {
+        case 0:
+            printf("l");
+            break;
+        case 2:
+            printf("w");
+        case 3:
+            printf("b");
+
+        default:
+            break;
+        }
         if (valor > 0)
             printf("[%s + %d]", identificarRegistro((operador.valor >> 4) & 0x0F), valor);
         else if (valor == 0)
