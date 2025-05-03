@@ -1,8 +1,8 @@
 #include "operaciones.h"
 #include "disassembler.h"
 
-int lectura_archivo(char *nombre_archivo, t_MV *maquina);
-int verifico_header(char *header);
+int lectura_vmx(t_MV* maquina,int *param, int size_param);
+int lectura_vmi(t_MV* maquina);
 int verifico_tamano(char tamano);
 
 /*
@@ -12,28 +12,58 @@ int verifico_tamano(char tamano);
     ejecuto el programa con el nombre de archivo traducido:
     main.exe sample.vmx
 */
-int main(int argc, char **argv)
-{
-    t_MV maquina;
-    t_instruccion *instrucciones;
+int main(int argc, char** argv) {
+    t_MV mv;
+    t_instruccion* instrucciones;
     int instruccion_size = 0;
 
+    mv.nombreVMI = NULL; // Inicializo el nombre del archivo vmi
+    mv.nombreVMX = NULL; // Inicializo el nombre del archivo vmx
+
+
     // Verifico que se haya ingresado el nombre del archivo
-    if (argc > 1)
-    {
-        if (lectura_archivo(argv[1], &maquina))
-        {
-            genero_array_instrucciones(&maquina, &instrucciones, &instruccion_size);
-            if (argc > 2 && strcmp(argv[2], "-d") == 0)
-            {
-                escribirDisassembler(instrucciones, instruccion_size);
+    if (argc > 1) {
+        //Lectura de los argumentos
+        int i = 0;
+        while ( i < argc && argv[i] != "-p") {
+            if (strstr(argv[i], ".vmx")) {
+                mv.nombreVMX = argv[i]; // Guardar el nombre del archivo vmx
             }
-            ejecutar_maquina(&maquina, instrucciones, instruccion_size); // Ejecutar la máquina virtual
-            free(instrucciones);
+            else if (strstr(argv[i], ".vmi")) {
+                mv.nombreVMI = argv[i]; // Guardar el nombre del archivo vmi
+            }
+            else if (strncmp(argv[i], "m=", 2) == 0) {
+                //El tamaño viene en Kib, lo multiplico por 1024 para pasarlo a bytes
+                mv.memory_size = atoi(argv[i] + 2) * 1024; // Guardar el tamaño de memoria
+            }
+            else if (strcmp(argv[i], "-d") == 0) {
+                mv.flag_d = 1; // Activar el flag de disassembler
+            }
+            i++;
         }
+        i++;
+
+        int *param = &argv[i];
+        int size_param = argc - i;
+
+        // Inicializar la máquina virtual
+        if (mv.nombreVMX != NULL && lectura_vmx(&mv, param, size_param)) {
+            genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
+        }
+        else if (mv.nombreVMI != NULL && lectura_vmi(&mv)) {
+            // Si se activa el flag de disassembler, se escribe el disassembler
+            genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
+        }
+        
+        if (mv.flag_d) {
+            // Si se activa el flag de disassembler, se escribe el disassembler
+            escribirDisassembler(instrucciones, instruccion_size);
+        }
+        
+        ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
+        free(instrucciones);
     }
-    else
-    {
+    else {
         printf("No se ha ingresado el nombre del archivo\n");
         return 1;
     }
@@ -46,90 +76,110 @@ int main(int argc, char **argv)
     identificador y version, y luego los datos que iran a la memoria de la
     maquina virtual (data segment)
 */
-int lectura_archivo(char *nombre_archivo, t_MV *maquina)
-{
-    FILE *archivo = fopen(nombre_archivo, "rb");
-    char header[9];
+int lectura_vmx(t_MV* maquina, int *param, int size_param) {
+    FILE* archivo = fopen(maquina->nombreVMX, "rb");
+    char modelo[6];
+    char version;
+    char header[19];
     short high, low;
     short tamano;
-    short lenNombreArchivo = strlen(nombre_archivo);
-
-    // Verifico que el nombre del archivo tenga la extension .vmx
-    if (strcmp(nombre_archivo + lenNombreArchivo - 4, ".vmx") != 0)
-    {
-        printf("El archivo no es un archivo vmx\n");
-        return 0;
-    }
 
     // Verifico que el archivo se haya abierto correctamente
-    if (archivo == NULL)
-    {
+    if (archivo == NULL) {
         printf("Error al abrir el archivo\n");
         return 0;
     }
 
-    // Leer el header del archivo
-    fread(header, sizeof(char), 8, archivo);
-    // Me aseguro de que sea una cadena
-    header[8] = '\0';
+    fread(modelo,sizeof(char),5,archivo); // Leo el modelo (VMX25) del archivo
+    fread(&version,sizeof(char),1,archivo); // Leo la version del archivo
 
-    // Verifico que el header sea correcto
-    if (verifico_header(header) == 0)
-    {
-        printf("El header del archivo no es correcto, %s\n. El identificador o la version no son correctas.", header);
+    if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2)) {
+        printf("El header del archivo no es correcto, %s\n. El identificador o la version no son correctas, %d.\n",modelo,version);
+        fclose(archivo);
         return 0;
     }
-    else
-    {
-        // Si el header es correcto, leo tamaño de datos e inicializo la máquina virtual
-        high = header[6] & 0x0FF;                        // Leo el byte alto del tamaño de datos
-        low = header[7] & 0x0FF;                         // Leo el byte bajo del tamaño de datos
-        tamano = ((high << 8) | low); // armo el tamaño de datos
-        
-        if (verifico_tamano(tamano) == 0)
-        {
-            printf("El tamaño de datos es incorrecto, %d\n", tamano);
+    else {
+        if (version == 1) {
+            //Leo tamaño de datos e inicializo la máquina virtual
+            high = header[6] & 0x0FF;     // Leo el byte alto del tamaño de datos
+            low = header[7] & 0x0FF;      // Leo el byte bajo del tamaño de datos
+            tamano = ((high << 8) | low); // armo el tamaño de datos
+                
+            if (verifico_tamano(tamano) == 0) {
+                printf("El tamaño de datos es incorrecto, %d\n", tamano);
+                fclose(archivo);
+                return 0;
+            }
+            else {
+                // Leo los datos del archivo y los guardo en la memoria de la máquina virtual
+                fread(maquina->memoria, 1, tamano, archivo);
+                // Si el tamaño es correcto, inicializo la máquina virtual
+                inicializar_maquina1(maquina, tamano);
+            }
         }
-        else
-        {
-            // Leo los datos del archivo y los guardo en la memoria de la máquina virtual
-            fread(maquina->memoria, 1, tamano, archivo);
-            // Si el tamaño es correcto, inicializo la máquina virtual
-            inicializar_maquina(maquina, tamano);
+        else {
+            fseek(archivo, 0, SEEK_SET); // Muevo el puntero al byte 14 del archivo
+            fread(header, sizeof(char), 18, archivo); // Leo el header del archivo
+            header[18] = '\0'; // Aseguro que el header sea una cadena de caracteres
+            
         }
     }
     fclose(archivo);
     return 1;
 }
 
-/*
-    Verifico que el header del archivo pasado por el traductor coincida con
-    el identificador y version de la maquina virtual
-*/
-int verifico_header(char *header)
-{
-    char identificador[6];
-    short version = header[5];
+int lectura_vmi(t_MV* mv) {
+    short high, low;
+    short tamano;
+    char modelo[6];
+    char version;
+    FILE* archivo = fopen(mv->nombreVMI, "rb");
+    int registros[16];
+    int segmentos[8];
 
-    strncpy(identificador, header, 5);
-    identificador[5] = '\0';
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo\n");
+        return 0;
+    }
 
-    return (strncmp(identificador, IDENTIFICADOR, 5) == 0 && version == VERSION_MV);
+    fread(modelo, sizeof(char), 5, archivo); // Leo el header del archivo
+    modelo[5] = '\0'; // Aseguro que el header sea una cadena de caracteres
+
+    fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
+
+    if (strcmp(modelo, "VMI25") != 0 || version != 1) {
+        printf("El header del archivo no es correcto, %s - %d",modelo,version);
+        fclose(archivo);
+        return 0;
+    }
+    else {
+        fread(&high, sizeof(char), 1, archivo); // Leo el byte alto del tamaño de datos
+        fread(&low, sizeof(char), 1, archivo); // Leo el byte bajo del tamaño de datos
+        tamano = ((high << 8) | low); // armo el tamaño de datos
+        tamano *= 1024; // Multiplico por 1024 para pasarlo a bytes
+
+        fread(registros, sizeof(int), 16, archivo); // Leo los registros del archivo
+        // inicializar_registros(mv, registros); // Inicializo los registros de la máquina virtual
+        fread(segmentos, sizeof(int), 8, archivo); // Leo los segmentos del archivo
+        // inicializar_segmentos(mv, segmentos); // Inicializo los segmentos de la máquina virtual
+        char memoria[tamano];
+        fread(memoria, sizeof(char), tamano, archivo); // Leo los datos del archivo
+        // inicializar_memoria(mv, memoria, tamano); // Inicializo la memoria de la máquina virtual
+    }
+    fclose(archivo);
+    return 1;
 }
 
 /*
     Verifico que el tamaño de los datos leidos no sea mayor a el tamaño
     de memoria de la maquina virtual
 */
-int verifico_tamano(char tamano)
-{
-    if (tamano < TAMANO_MEMORIA)
-    {
+int verifico_tamano(char tamano) {
+    if (tamano < TAMANO_MEMORIA) {
         // El tamaño de datos es correcto
         return 1;
     }
-    else
-    {
+    else {
         // El tamaño de datos es incorrecto
         return 0;
     }
