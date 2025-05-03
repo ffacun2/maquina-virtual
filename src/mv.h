@@ -13,10 +13,10 @@
 #define VERSION_MV1 1
 #define VERSION_MV2 2
 #define TAM_CELDA 4
+#define null -1
 
 enum {
     // Segmentos
-
     // Code Segment
     CS = 0,
     // Data Segment
@@ -27,23 +27,17 @@ enum {
     SS = 3,
     // Const Segmet
     KS = 4,
-
     // Instruction Pointer
     IP = 5,
-
     // Pila de ejecución
-
     // Stack Pointer
     SP = 6,
     // Base Pointer
     BP = 7,
-
     // condition code
     CC = 8,
-
     // acumulador
     AC = 9,
-
     // registros de proposito general EAX ...
     A = 10,
     B = 11,
@@ -90,9 +84,17 @@ typedef struct {
 
 void inicializar_maquina(t_MV* MV, short int tamano);
 void inicializar_maquina2(t_MV* mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint,int memoria);
+
+// Metodos de inicializacion para archivo vmi
 void inicializo_registros(t_MV* mv, int registros[]);
 void inicializo_segmentos(t_MV* mv, int segmentos[]);
 void inicializo_memoria(t_MV* mv, char memoria[], int size);
+
+//Metodos de carga de version 2 archivo vmx
+int cargoParamSegment(t_MV* mv, char **param, int size);
+void cargoCodeSegment(t_MV* mv, char code[], int size);
+void cargoConstSegment(t_MV* mv, char constant[], int size);
+
 
 void ejecutar_maquina(t_MV* maquina, t_instruccion*, int instruccion_size);
 void valor_operacion(t_operador* op, t_MV mv);

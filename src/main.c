@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
     identificador y version, y luego los datos que iran a la memoria de la
     maquina virtual (data segment)
 */
-int lectura_vmx(t_MV* maquina, char** param, int size_param) {
+int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     FILE* archivo = fopen(maquina->nombreVMX, "rb");
     char modelo[6];
     char version;
@@ -84,6 +84,7 @@ int lectura_vmx(t_MV* maquina, char** param, int size_param) {
     short high, low;
     short tamano;
     short tamanio_segmentos[8];
+    int size_param = 0;
 
     // Verifico que el archivo se haya abierto correctamente
     if (archivo == NULL) {
@@ -124,6 +125,7 @@ int lectura_vmx(t_MV* maquina, char** param, int size_param) {
             fread(header, sizeof(char), 18, archivo); // Leo el header del archivo
             header[18] = '\0'; // Aseguro que el header sea una cadena de caracteres
             
+            //Desarmo el header para obtener el tamaño de cada segmento y agruparlo en un array
             for (int i = 6; i < 16; i+=2) {
                 high = header[i] & 0x0FF; // Leo el byte alto del tamaño de datos
                 low = header[i + 1] & 0x0FF; // Leo el byte bajo del tamaño de datos
@@ -136,10 +138,19 @@ int lectura_vmx(t_MV* maquina, char** param, int size_param) {
             //Leo todo el codigo maquina del archivo
             fread(&code, sizeof(char), tamanio_segmentos[0], archivo);
            //Leo todo el codigo de constantes del archivo
-            fread(&constant, sizeof(char), tamanio_segmentos[4], archivo); // Leo el byte de constante
+            fread(&constant, sizeof(char), tamanio_segmentos[4], archivo); 
             
+            
+            // Cargo el semento de parametros en la memoria de la máquina virtual
+            size_param = cargoParamSegment(maquina, param, cant_param);
+            
+            //inicializar_maquina2(maquina, tamanio_segmetos, size_param); // Inicializo la máquina virtual
 
-            //inicializar_maquina2(maquina, header, param, size_param); // Inicializo la máquina virtual
+            // Cargo el segmento de código en la memoria de la máquina virtual
+            cargoCodeSegment(maquina, code, tamanio_segmentos[0]); 
+            // Cargo el segmento de constantes en la memoria de la máquina virtual
+            cargoConstSegment(maquina, constant, tamanio_segmentos[4]); 
+
         }
     }
     fclose(archivo);
