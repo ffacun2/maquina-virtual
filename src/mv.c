@@ -55,6 +55,8 @@ void inicializar_maquina2(t_MV* mv, short int tamanoCS, short int tamanoDS, shor
             mv->tabla_segmentos[i].tamano = V[i];
         }
     }
+
+    mv->registros[IP] = mv->registros[CS] + offsetEntryPoint;
 }
 
 /*
