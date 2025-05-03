@@ -126,31 +126,38 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             header[18] = '\0'; // Aseguro que el header sea una cadena de caracteres
             
             //Desarmo el header para obtener el tamaño de cada segmento y agruparlo en un array
-            for (int i = 6; i < 16; i+=2) {
-                high = header[i] & 0x0FF; // Leo el byte alto del tamaño de datos
-                low = header[i + 1] & 0x0FF; // Leo el byte bajo del tamaño de datos
-                tamanio_segmentos[i / 2 - 3] = ((high << 8) | low); // armo el tamaño de datos
-            }
+            tamanio_segmentos[1] = (header[14] << 8) | (header[15] & 0x0FF); // Leo el tamaño del segmento de consantes
+            tamanio_segmentos[2] = (header[6] << 8) | (header[7] & 0x0FF); // Leo el tamaño del segmento de codigo
+            tamanio_segmentos[3] = (header[8] << 8) | (header[9] & 0x0FF); // Leo el tamaño del segmento de datos
+            tamanio_segmentos[4] = (header[10] << 8) | (header[11] & 0x0FF); // Leo el tamaño del segmento memoria dinamica
+            tamanio_segmentos[5] = (header[12] << 8) | (header[13] & 0x0FF); // Leo el tamaño del segmento de stack
 
-            char code[tamanio_segmentos[0]]; // Defino el tamaño del segmento de código
-            char constant[tamanio_segmentos[5]]; // Defino el tamaño del segmento de constantes
-
+            char constant[tamanio_segmentos[1]]; // Defino el tamaño del segmento de constantes
+            char code[tamanio_segmentos[2]]; // Defino el tamaño del segmento de código
+            
             //Leo todo el codigo maquina del archivo
-            fread(&code, sizeof(char), tamanio_segmentos[0], archivo);
+            fread(&code, sizeof(char), tamanio_segmentos[2], archivo);
            //Leo todo el codigo de constantes del archivo
-            fread(&constant, sizeof(char), tamanio_segmentos[4], archivo); 
-            
-            
+            fread(&constant, sizeof(char), tamanio_segmentos[1], archivo); 
+          
             // Cargo el semento de parametros en la memoria de la máquina virtual
             size_param = cargoParamSegment(maquina, param, cant_param);
+
+            tamanio_segmentos[0] = size_param;
+            //inicializar_maquina2(maquina, tamanio_segmetos); // Inicializo la máquina virtual
+
             
-            //inicializar_maquina2(maquina, tamanio_segmetos, size_param); // Inicializo la máquina virtual
-
             // Cargo el segmento de código en la memoria de la máquina virtual
-            cargoCodeSegment(maquina, code, tamanio_segmentos[0]); 
+            cargoCodeSegment(maquina, code, tamanio_segmentos[2]); 
             // Cargo el segmento de constantes en la memoria de la máquina virtual
-            cargoConstSegment(maquina, constant, tamanio_segmentos[4]); 
-
+            cargoConstSegment(maquina, constant, tamanio_segmentos[1]); 
+            
+           
+            for (int i = 0; i < 50; i++)
+            {
+                printf("%02X ", maquina->memoria[i]);
+            }
+            
         }
     }
     fclose(archivo);
