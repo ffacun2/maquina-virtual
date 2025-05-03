@@ -1,7 +1,7 @@
 #include "operaciones.h"
 #include "disassembler.h"
 
-int lectura_vmx(t_MV* maquina,int *param, int size_param);
+int lectura_vmx(t_MV* maquina,char **param, int size_param);
 int lectura_vmi(t_MV* maquina);
 int verifico_tamano(char tamano);
 
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         //Lectura de los argumentos
         int i = 0;
-        while ( i < argc && argv[i] != "-p") {
+        while ( i < argc && strcmp(argv[i], "-p") != 0) {
             if (strstr(argv[i], ".vmx")) {
                 mv.nombreVMX = argv[i]; // Guardar el nombre del archivo vmx
             }
@@ -43,16 +43,16 @@ int main(int argc, char** argv) {
         }
         i++;
 
-        int *param = &argv[i];
+        char **param = argv + i;
         int size_param = argc - i;
-
+       
         // Inicializar la máquina virtual
         if (mv.nombreVMX != NULL && lectura_vmx(&mv, param, size_param)) {
-            genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
+            // genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
         else if (mv.nombreVMI != NULL && lectura_vmi(&mv)) {
             // Si se activa el flag de disassembler, se escribe el disassembler
-            genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
+            // genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
         
         if (mv.flag_d) {
@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
             escribirDisassembler(instrucciones, instruccion_size);
         }
         
-        ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
-        free(instrucciones);
+        // ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
+        // free(instrucciones);
     }
     else {
         printf("No se ha ingresado el nombre del archivo\n");
@@ -76,13 +76,14 @@ int main(int argc, char** argv) {
     identificador y version, y luego los datos que iran a la memoria de la
     maquina virtual (data segment)
 */
-int lectura_vmx(t_MV* maquina, int *param, int size_param) {
+int lectura_vmx(t_MV* maquina, char** param, int size_param) {
     FILE* archivo = fopen(maquina->nombreVMX, "rb");
     char modelo[6];
     char version;
     char header[19];
     short high, low;
     short tamano;
+    short tamanio_segmentos[8];
 
     // Verifico que el archivo se haya abierto correctamente
     if (archivo == NULL) {
@@ -114,14 +115,31 @@ int lectura_vmx(t_MV* maquina, int *param, int size_param) {
                 // Leo los datos del archivo y los guardo en la memoria de la máquina virtual
                 fread(maquina->memoria, 1, tamano, archivo);
                 // Si el tamaño es correcto, inicializo la máquina virtual
-                inicializar_maquina1(maquina, tamano);
+                inicializar_maquina(maquina, tamano);
             }
         }
         else {
+            //El archivo trae header -> codigo -> constantes
             fseek(archivo, 0, SEEK_SET); // Muevo el puntero al byte 14 del archivo
             fread(header, sizeof(char), 18, archivo); // Leo el header del archivo
             header[18] = '\0'; // Aseguro que el header sea una cadena de caracteres
             
+            for (int i = 6; i < 16; i+=2) {
+                high = header[i] & 0x0FF; // Leo el byte alto del tamaño de datos
+                low = header[i + 1] & 0x0FF; // Leo el byte bajo del tamaño de datos
+                tamanio_segmentos[i / 2 - 3] = ((high << 8) | low); // armo el tamaño de datos
+            }
+
+            char code[tamanio_segmentos[0]]; // Defino el tamaño del segmento de código
+            char constant[tamanio_segmentos[5]]; // Defino el tamaño del segmento de constantes
+
+            //Leo todo el codigo maquina del archivo
+            fread(&code, sizeof(char), tamanio_segmentos[0], archivo);
+           //Leo todo el codigo de constantes del archivo
+            fread(&constant, sizeof(char), tamanio_segmentos[4], archivo); // Leo el byte de constante
+            
+
+            //inicializar_maquina2(maquina, header, param, size_param); // Inicializo la máquina virtual
         }
     }
     fclose(archivo);
