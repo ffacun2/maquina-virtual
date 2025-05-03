@@ -81,8 +81,18 @@ char *identificarRegistro(int codigo)
         return "CS";
     case 1:
         return "DS";
+    case 2:
+        return "ES";
+    case 3:
+        return "SS";
+    case 4:
+        return "KS";
     case 5:
         return "IP";
+    case 6:
+        return "SP";
+    case 7:
+        return "BP";
     case 8:
         return "CC";
     case 9:
