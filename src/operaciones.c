@@ -201,7 +201,7 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
-    char *str, bin[33];
+    char *str, bin[33], caracter;
     int CX = maquina->registros[C] & 0xFFFF;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
@@ -210,6 +210,7 @@ void SYS(t_MV *maquina, t_operador op1)
     // Splitter 1 corta de a bits
     // Splitter 2 corta de a bytes
     t_splitter splitter1, splitter2;
+    FILE *imagen;
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
@@ -351,7 +352,25 @@ void SYS(t_MV *maquina, t_operador op1)
         break;
     
     case 0xF: // Breakpoint
-
+        maquina->flag_ejecucion = 0;
+        imagen = fopen(maquina->nombreVMI, "wb");
+        fwrite(maquina,sizeof(maquina),1,imagen);
+        scanf("%c",&caracter);
+        switch (caracter)
+        {
+        case 'g': // go
+            maquina->flag_ejecucion = 1;
+            break;
+        case 'q': // quit
+            STOP(maquina);
+            break;
+        case '\n': // Enter
+            
+            break;
+        default:
+            break;
+        }
+        
         break;
     }
 }
