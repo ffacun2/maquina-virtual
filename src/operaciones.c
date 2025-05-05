@@ -201,12 +201,14 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 void SYS(t_MV *maquina, t_operador op1)
 {
     char *str, bin[33];
+    int CX = maquina->registros[C] & 0xFFFF;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, k, x, dirFisica;
     int salidas[32], z[32];
+    // Splitter 1 corta de a bits
+    // Splitter 2 corta de a bytes
     t_splitter splitter1, splitter2;
-    // printf("Ejecutando SYS...\n");
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
@@ -325,6 +327,17 @@ void SYS(t_MV *maquina, t_operador op1)
                 }
             printf("\n");
         }
+        break;
+    case 3: // String read
+        scanf("%s",str);
+        i = 0;
+        while (str[i] != '\0' && i < CX)
+        {
+            maquina->memoria[maquina->registros[D] + i] = str[i];
+            i++;
+        }
+        maquina->memoria[maquina->registros[D] + i] = '\0';
+        break;
     }
 }
 void Salto(t_MV *mv, t_operador op1)
