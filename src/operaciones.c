@@ -342,8 +342,7 @@ void SYS(t_MV *maquina, t_operador op1)
         break;
     
     case 4: // String write
-        printf("[%04X]: ", dirFisica);
-        printf("%s", maquina->memoria[dirFisica]);
+        printf("[%04X]: %s", dirFisica, maquina->memoria[dirFisica]);
         break;
     }
 }
