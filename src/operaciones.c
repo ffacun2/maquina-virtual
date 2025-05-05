@@ -3,6 +3,7 @@
 #include "operaciones.h"
 #include "mv.h"
 #include "splitter.h"
+#include <conio.h>
 
 // A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
 // nos permite detectar los valores negativos.
@@ -343,6 +344,14 @@ void SYS(t_MV *maquina, t_operador op1)
     
     case 4: // String write
         printf("[%04X]: %s", dirFisica, maquina->memoria[dirFisica]);
+        break;
+    
+    case 7: // Clear screen
+        clrscr();
+        break;
+    
+    case 0xF: // Breakpoint
+
         break;
     }
 }
