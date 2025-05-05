@@ -4,10 +4,11 @@
 
 /*
     Inicializa la máquina virtual, configurando los registros y la tabla de segmentos.
-    Se establece el tamaño del segmento de datos y el segmento de código, así como la base
+    Se establece el tamaño del segmento de datos y el segmento de código, así como la base.A
+    Este metodo es utilizado para inicializar la máquina virtual version 1.
+    @param mv: puntero a la máquina virtual
+    @param tamano: tamaño del segmento de codigo
 */
-
-// Version 1
 void inicializar_maquina(t_MV* mv, short int tamano) {
     mv->registros[CS] = 0x00000000;
     mv->registros[DS] = 0x00010000;
@@ -18,6 +19,13 @@ void inicializar_maquina(t_MV* mv, short int tamano) {
     mv->registros[IP] = mv->registros[CS];
 }
 
+/*
+    Inicializa la máquina virtual con los tamaños de segmentos, los registros y el punto de entrada.
+    Este metodo es utilizado para inicializar la máquina virtual version 2.
+    @param mv: puntero a la máquina virtual
+    @param segmentos_size: array de tamaños de segmentos [PS, KS, CS, DS, ES, SS]
+    @param empty_point: offset del CS hasta el main del codigo assembler
+*/
 void inicializo2 (t_MV* mv, short segmentos_size[],int empty_point) {
     int seg = 0;
     int base = 0;
@@ -43,50 +51,11 @@ void inicializo2 (t_MV* mv, short segmentos_size[],int empty_point) {
     mv->registros[SP] = mv->registros[SS] + mv->tabla_segmentos[mv->registros[SS] >> 16].tamano;
 }
 
-// Version 2
-void inicializar_maquina2(t_MV* mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint, int memoria) {
-    int i, acumulador = 0;
-    int b = 0;
-    short V[] = { 0, tamanoKS, tamanoCS, tamanoDS, tamanoES, tamanoSS };
-    int seg[] = { KS, CS, DS, ES, SS };
-
-    for (i = 0; i < CANT_SEGMENTOS; i++) {
-        mv->tabla_segmentos[i].base = acumulador;
-    }
-
-    // Tamaño del Param Segment
-    short int tamanoPS = memoria;
-    for (i = 1; i < 6; i++) {
-        if (V[i] > 0) {
-            tamanoPS -= V[i];
-        }
-    }
-    V[0] = tamanoPS;
-
-    // Tabla de segmentos
-    for (i = 0; i < 6; i--) {
-        if (V[i] <= 0) {
-            mv->tabla_segmentos[i].base = mv->tabla_segmentos[i].tamano = null;
-            if (i > 0) {
-                mv->registros[seg[i - 1]] = null;
-            }
-        }
-        else {
-            mv->tabla_segmentos[i].base = b;
-            if (i > 0) {
-                mv->registros[seg[i - 1]] = b << 16;
-            }
-            b++;
-            mv->tabla_segmentos[i].tamano = V[i];
-        }
-    }
-
-    mv->registros[IP] = mv->registros[CS] + offsetEntryPoint;
-}
-
 /*
     Inicializa los registros de la máquina virtual con los datos
     proporcionados por el archivo vmi.
+    @param mv: puntero a la máquina virtual
+    @param registros: array con todos los valores de los registros de la mv
 */
 void inicializo_registros(t_MV* mv, int registros[]) {
     for (int i = 0; i < CANT_REGISTROS; i++) {
@@ -97,6 +66,8 @@ void inicializo_registros(t_MV* mv, int registros[]) {
 /*
     Inicializa la tabla de segmentos de la máquina virtual con los datos
     proporcionados por el archivo vmi.
+    @param mv: puntero a la máquina virtual
+    @param segmentos: array con todos los valores de los segmentos de la mv
 */
 void inicializo_segmentos(t_MV* mv, int segmentos[]) {
     for (int i = 0; i < CANT_SEGMENTOS; i++) {
@@ -108,6 +79,9 @@ void inicializo_segmentos(t_MV* mv, int segmentos[]) {
 /*
     Inicializa la memoria de la máquina virtual con los datos proporcionados
     por el archivo vmi.
+    @param mv: puntero a la máquina virtual
+    @param memoria: array con todos los valores de la memoria de la mv
+    @param size: tamaño de la memoria
 */
 void inicializo_memoria(t_MV* mv, char memoria[], int size) {
     for (int i = 0; i < size; i++) {
@@ -119,6 +93,10 @@ void inicializo_memoria(t_MV* mv, char memoria[], int size) {
     Carga el segmento de parámetros en la memoria de la máquina virtual.
     Se utiliza para inicializar el segmento de parámetros con los datos
     proporcionados en la consola de comando.
+    @param mv: puntero a la máquina virtual
+    @param param: array de strings que representan los parámetros
+    @param size: tamaño del array de parámetros
+    @return: tamaño del segmento de parámetros cargado en la memoria
 */
 int cargoParamSegment(t_MV* mv, char **param, int size) {
     int posicionamiento = 0;
@@ -148,8 +126,11 @@ int cargoParamSegment(t_MV* mv, char **param, int size) {
 
 /*
     Carga el segmento de constantes en la memoria de la máquina virtual.
-    Se utiliza para inicializar el segmento de constantes con los datos
-    proporcionados en el archivo vmx.
+    Se utiliza para inicializar en memoria en la posicion del segmento de constantes
+    con los datos proporcionados en el archivo vmx.
+    @param mv: puntero a la máquina virtual
+    @param constant: array de constantes a cargar
+    @param size: tamaño del array de constantes
 */
 void cargoConstSegment(t_MV* mv, char constant[], int size) {
     if (size == 0) {
@@ -163,8 +144,11 @@ void cargoConstSegment(t_MV* mv, char constant[], int size) {
 
 /*
     Carga el segmento de código en la memoria de la máquina virtual.
-    Se utiliza para inicializar el segmento de código con los datos
-    proporcionados en el archivo vmx.
+    Se utiliza para inicializar en memoria en la posicion del  segmento 
+    de código con los datos proporcionados en el archivo vmx.
+    @param mv: puntero a la máquina virtual
+    @param code: array de código a cargar
+    @param size: tamaño del array de código
 */
 void cargoCodeSegment(t_MV* mv, char code[], int size) {
     if (size == 0) {
@@ -180,6 +164,9 @@ void cargoCodeSegment(t_MV* mv, char code[], int size) {
     Inicia el proceso de lectura y ejecución de instrucciones de la máquina virtual.
     Se lee un array de instrucciones donde cada elemento tiene operacion y los
     operando 1 y 2 con sus respectivos tipo y valor. Este array es generado previamente.
+    @param mv: puntero a la máquina virtual
+    @param instrucciones: array de instrucciones a ejecutar
+    @param instruccion_size: tamaño del array de instrucciones
 */
 void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_size) {
     t_func0 t_func0[1];

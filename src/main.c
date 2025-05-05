@@ -75,7 +75,18 @@ int main(int argc, char** argv) {
 /*
     Hago lectura del archivo traducido, primero el header para verificar
     identificador y version, y luego los datos que iran a la memoria de la
-    maquina virtual (data segment)
+    maquina virtual (data segment).
+    Si es version 1: Se lee del archivo el codigo y se carga en la memoria
+    de la maquina virtual, y se inicializa la tabla de segmentos.
+    Si es version 2: Se lee el header y se desarma para obtener los tamaños
+    de cada segmento, se cargan los segmentos en la memoria de la maquina virtual
+    y se inicializa la tabla de segmentos junto con los registros.
+    @param maquina: puntero a la maquina virtual
+    @param param: array de parametros a cargar en la memoria de la maquina virtual
+    leidos en la linea de comandos.
+    @param cant_param: cantidad de parametros a cargar en la memoria de la maquina virtual
+    @return: 1 si la lectura fue exitosa, 0 si hubo un error.
+
 */
 int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     FILE* archivo = fopen(maquina->nombreVMX, "rb");
@@ -136,9 +147,9 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             char code[tamanio_segmentos[2]]; // Defino el tamaño del segmento de código
             
             //Leo todo el codigo maquina del archivo
-            fread(&code, sizeof(char), tamanio_segmentos[2], archivo);
+            fread(code, sizeof(char), tamanio_segmentos[2], archivo);
            //Leo todo el codigo de constantes del archivo
-            fread(&constant, sizeof(char), tamanio_segmentos[1], archivo); 
+            fread(constant, sizeof(char), tamanio_segmentos[1], archivo); 
           
             // Cargo el semento de parametros en la memoria de la máquina virtual
             size_param = cargoParamSegment(maquina, param, cant_param);
@@ -160,16 +171,24 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             cargoConstSegment(maquina, constant, tamanio_segmentos[1]); 
             
 
-            // int x = 0;
-            // for (int i = 0; i < 50; i++)
-            // {
-            //     if (x == 4) {
-            //         printf("\n");
-            //         x = 0;
-            //     }
-            //     printf("%02X ", maquina->memoria[i]&0x0FF);
-            //     x++;
-            // }
+            for (int i = 0; i < 8; i++) {
+                printf("Segmento[%d]: base: %04X, tamano: %04X\n", i, maquina->tabla_segmentos[i].base, maquina->tabla_segmentos[i].tamano);
+            }
+
+            for (int i = 0; i < 7; i++){
+                printf("Registro[%d]: %08X\n", i, maquina->registros[i]);
+            }
+
+            int x = 0;
+            for (int i = 0; i < 50; i++)
+            {
+                if (x == 4) {
+                    printf("\n");
+                    x = 0;
+                }
+                printf("%02X ", maquina->memoria[i]&0x0FF);
+                x++;
+            }
             
         }
     }
@@ -177,6 +196,14 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     return 1;
 }
 
+/*
+    Leo el archivo vmi, primero leo el header para verificar el identificador y la version
+    y luego los datos que iran a la memoria de la maquina virtual. El archivos debe contener
+    todos los datos necesarios para inicializar la maquina virtual. VMI es una imagen de la
+    maquina virtual en un estado determinado.
+    @param mv: puntero a la maquina virtual
+    @return: 1 si la lectura fue exitosa, 0 si hubo un error.
+*/
 int lectura_vmi(t_MV* mv) {
     short high, low;
     short tamano;
@@ -221,6 +248,8 @@ int lectura_vmi(t_MV* mv) {
 /*
     Verifico que el tamaño de los datos leidos no sea mayor a el tamaño
     de memoria de la maquina virtual
+    @param tamano: tamaño de los datos leidos
+    @return: 1 si el tamaño es correcto, 0 si es incorrecto
 */
 int verifico_tamano(char tamano) {
     if (tamano < TAMANO_MEMORIA) {
@@ -231,6 +260,12 @@ int verifico_tamano(char tamano) {
     }
 }
 
+/*
+    Verifico que el tamaño de los segmentos leidos no sea mayor a el tamaño
+    de memoria de la maquina virtual
+    @param segmento_sizes: array con los tamaños de los segmentos
+    @return: 1 si el tamaño es correcto, 0 si es incorrecto
+*/
 int verifico_tamano2(short segmento_sizes[]) {
     int total_size = 0;
     for (int i = 0; i < 6; i++) {
