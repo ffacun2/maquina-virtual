@@ -3,6 +3,7 @@
 #include "operaciones.h"
 #include "mv.h"
 #include "splitter.h"
+#include <conio.h>
 
 // A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
 // nos permite detectar los valores negativos.
@@ -201,16 +202,18 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 void SYS(t_MV *maquina, t_operador op1)
 {
     char *str, bin[33];
+    int CX = maquina->registros[C] & 0xFFFF;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
     int i, j, k, x, dirFisica;
     int salidas[32], z[32];
+    // Splitter 1 corta de a bits
+    // Splitter 2 corta de a bytes
     t_splitter splitter1, splitter2;
-    // printf("Ejecutando SYS...\n");
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
-    dirFisica = maquina->tabla_segmentos[1].base + maquina->registros[D] & 0xFFFF;
+    dirFisica = maquina->tabla_segmentos[(maquina->registros[D] >> 16) & 0xFFFF].base + maquina->registros[D] & 0xFFFF;
     switch (op1.valor)
     {
     case 1: // Modo lectura
@@ -325,6 +328,31 @@ void SYS(t_MV *maquina, t_operador op1)
                 }
             printf("\n");
         }
+        break;
+
+    case 3: // String read
+        printf("[%04X]: ", dirFisica);
+        scanf("%s",str);
+        i = 0;
+        while (str[i] != '\0' && i < CX)
+        {
+            maquina->memoria[maquina->registros[D] + i] = str[i];
+            i++;
+        }
+        maquina->memoria[maquina->registros[D] + i] = '\0';
+        break;
+    
+    case 4: // String write
+        printf("[%04X]: %s", dirFisica, maquina->memoria[dirFisica]);
+        break;
+    
+    case 7: // Clear screen
+        clrscr();
+        break;
+    
+    case 0xF: // Breakpoint
+
+        break;
     }
 }
 void Salto(t_MV *mv, t_operador op1)
