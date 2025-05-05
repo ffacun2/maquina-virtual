@@ -4,6 +4,7 @@
 int lectura_vmx(t_MV* maquina,char **param, int size_param);
 int lectura_vmi(t_MV* maquina);
 int verifico_tamano(char tamano);
+int verifico_tamano2(short segmento_sizes[]);
 
 /*
     compilo el programa:
@@ -19,7 +20,8 @@ int main(int argc, char** argv) {
 
     mv.nombreVMI = NULL; // Inicializo el nombre del archivo vmi
     mv.nombreVMX = NULL; // Inicializo el nombre del archivo vmx
-
+    mv.flag_ejecucion = 1; // Inicializo el flag de ejecución
+    mv.flag_d = 0; // Inicializo el flag de disassembler
 
     // Verifico que se haya ingresado el nombre del archivo
     if (argc > 1) {
@@ -33,7 +35,6 @@ int main(int argc, char** argv) {
                 mv.nombreVMI = argv[i]; // Guardar el nombre del archivo vmi
             }
             else if (strncmp(argv[i], "m=", 2) == 0) {
-                //El tamaño viene en Kib, lo multiplico por 1024 para pasarlo a bytes
                 mv.memory_size = atoi(argv[i] + 2) * 1024; // Guardar el tamaño de memoria
             }
             else if (strcmp(argv[i], "-d") == 0) {
@@ -55,7 +56,7 @@ int main(int argc, char** argv) {
             // genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
         
-        if (mv.flag_d) {
+        if (mv.flag_d && mv.flag_ejecucion) {
             // Si se activa el flag de disassembler, se escribe el disassembler
             escribirDisassembler(instrucciones, instruccion_size);
         }
@@ -83,12 +84,13 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     char header[19];
     short high, low;
     short tamano;
-    short tamanio_segmentos[8];
+    short tamanio_segmentos[8] = {0,0,0,0,0,0,0,0};
     int size_param = 0;
 
     // Verifico que el archivo se haya abierto correctamente
     if (archivo == NULL) {
         printf("Error al abrir el archivo\n");
+        maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
         return 0;
     }
 
@@ -96,8 +98,8 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     fread(&version,sizeof(char),1,archivo); // Leo la version del archivo
 
     if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2)) {
-        printf("El header del archivo no es correcto, %s\n. El identificador o la version no son correctas, %d.\n",modelo,version);
         fclose(archivo);
+        maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
         return 0;
     }
     else {
@@ -108,19 +110,17 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             tamano = ((high << 8) | low); // armo el tamaño de datos
                 
             if (verifico_tamano(tamano) == 0) {
-                printf("El tamaño de datos es incorrecto, %d\n", tamano);
                 fclose(archivo);
+                maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
+                printf("Error: Tamaño de code segment excede la memoria de la máquina virtual\n");
                 return 0;
             }
-            else {
-                // Leo los datos del archivo y los guardo en la memoria de la máquina virtual
-                fread(maquina->memoria, 1, tamano, archivo);
-                // Si el tamaño es correcto, inicializo la máquina virtual
-                inicializar_maquina(maquina, tamano);
-            }
+            // Leo los datos del archivo y los guardo en la memoria de la máquina virtual
+            fread(maquina->memoria, 1, tamano, archivo);
+            // Si el tamaño es correcto, inicializo la máquina virtual
+            inicializar_maquina(maquina, tamano);
         }
         else {
-            //El archivo trae header -> codigo -> constantes
             fseek(archivo, 0, SEEK_SET); // Muevo el puntero al byte 14 del archivo
             fread(header, sizeof(char), 18, archivo); // Leo el header del archivo
             header[18] = '\0'; // Aseguro que el header sea una cadena de caracteres
@@ -144,19 +144,32 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             size_param = cargoParamSegment(maquina, param, cant_param);
 
             tamanio_segmentos[0] = size_param;
-            //inicializar_maquina2(maquina, tamanio_segmetos); // Inicializo la máquina virtual
 
+            if (verifico_tamano2(tamanio_segmentos) == 0) {
+                fclose(archivo);
+                maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
+                printf("Error: Tamaño de segmentos excede la memoria de la máquina virtual\n");
+                return 0;
+            }
             
+            inicializo2(maquina,tamanio_segmentos,(header[16]<<8)|(header[17] & 0x0FF)); // Inicializo la máquina virtual      
+
             // Cargo el segmento de código en la memoria de la máquina virtual
             cargoCodeSegment(maquina, code, tamanio_segmentos[2]); 
             // Cargo el segmento de constantes en la memoria de la máquina virtual
             cargoConstSegment(maquina, constant, tamanio_segmentos[1]); 
             
-           
-            for (int i = 0; i < 50; i++)
-            {
-                printf("%02X ", maquina->memoria[i]);
-            }
+
+            // int x = 0;
+            // for (int i = 0; i < 50; i++)
+            // {
+            //     if (x == 4) {
+            //         printf("\n");
+            //         x = 0;
+            //     }
+            //     printf("%02X ", maquina->memoria[i]&0x0FF);
+            //     x++;
+            // }
             
         }
     }
@@ -184,7 +197,6 @@ int lectura_vmi(t_MV* mv) {
     fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
 
     if (strcmp(modelo, "VMI25") != 0 || version != 1) {
-        printf("El header del archivo no es correcto, %s - %d",modelo,version);
         fclose(archivo);
         return 0;
     }
@@ -212,11 +224,19 @@ int lectura_vmi(t_MV* mv) {
 */
 int verifico_tamano(char tamano) {
     if (tamano < TAMANO_MEMORIA) {
-        // El tamaño de datos es correcto
         return 1;
     }
     else {
-        // El tamaño de datos es incorrecto
         return 0;
     }
+}
+
+int verifico_tamano2(short segmento_sizes[]) {
+    int total_size = 0;
+    for (int i = 0; i < 6; i++) {
+        if (segmento_sizes[i] > 0) {
+            total_size += segmento_sizes[i];
+        }
+    }
+    return total_size <= TAMANO_MEMORIA;
 }

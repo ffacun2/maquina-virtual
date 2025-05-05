@@ -18,6 +18,31 @@ void inicializar_maquina(t_MV* mv, short int tamano) {
     mv->registros[IP] = mv->registros[CS];
 }
 
+void inicializo2 (t_MV* mv, short segmentos_size[],int empty_point) {
+    int seg = 0;
+    int base = 0;
+    int reg[] = {KS, CS, DS, ES, SS};
+
+    for (int i = 0; i < 6; i++) {
+        if (segmentos_size[i] > 0) {
+            mv->tabla_segmentos[seg].base = base;
+            mv->tabla_segmentos[seg].tamano = base + segmentos_size[i];
+            if (i > 0) {
+                mv->registros[reg[i-1]] = seg << 16;
+            }
+            base += segmentos_size[i];
+            seg++;
+        }
+        else {
+            if (i > 0) {
+                mv->registros[reg[i-1]] = null;
+            }
+        }
+    }
+    mv->registros[IP] = mv->registros[CS] + empty_point;
+    mv->registros[SP] = mv->registros[SS] + mv->tabla_segmentos[mv->registros[SS] >> 16].tamano;
+}
+
 // Version 2
 void inicializar_maquina2(t_MV* mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint, int memoria) {
     int i, acumulador = 0;
@@ -127,6 +152,9 @@ int cargoParamSegment(t_MV* mv, char **param, int size) {
     proporcionados en el archivo vmx.
 */
 void cargoConstSegment(t_MV* mv, char constant[], int size) {
+    if (size == 0) {
+        return; // Si el tamaño es cero, no hay nada que cargar
+    }
     int base = mv->tabla_segmentos[(mv->registros[KS] >> 16) & 0x0FFFF].base;
     for (int i = base; i < (base + size); i++) {
         mv->memoria[i] = constant[i - base];
@@ -139,6 +167,9 @@ void cargoConstSegment(t_MV* mv, char constant[], int size) {
     proporcionados en el archivo vmx.
 */
 void cargoCodeSegment(t_MV* mv, char code[], int size) {
+    if (size == 0) {
+        return; // Si el tamaño es cero, no hay nada que cargar
+    }
     int base = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
     for (int i = base; i < (base + size); i++) {
         mv->memoria[i] = code[i - base];
