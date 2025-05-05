@@ -18,6 +18,9 @@ void FuncionCC(t_MV *maquina, int resultado);
 int deBinarioStringAInt(char bin[]);
 void deIntABinarioString(int nro, char bin[]);
 void Salto(t_MV *maquina, t_operador op1);
+int calcularDireccionFisica(t_MV *maquina, int segmento, int desplazamiento);
+void escribirEnMemoria(t_MV *maquina, int direccion_fisica, int valor);
+int leerDesdeMemoria(t_MV *maquina, int direccion_fisica);
 // funciones con 2 operandos
 void MOV(t_MV *maquina, t_operador op1, t_operador op2);
 void ADD(t_MV *maquina, t_operador op1, t_operador op2);
@@ -45,9 +48,12 @@ void JNZ(t_MV *maquina, t_operador op1);
 void JNP(t_MV *maquina, t_operador op1);
 void JNN(t_MV *maquina, t_operador op1);
 void NOT(t_MV *maquina, t_operador op1);
-
+void PUSH(t_MV *maquina, t_operador op1);
+void POP(t_MV *maquina, t_operador op1);
+void CALL(t_MV *maquina, t_operador op1);
 // funciones sin operandos
 void STOP(t_MV *maquina);
+void RET(t_MV *maquina);
 
 void inicializo_vector_op (t_func0 func0[], t_func1 func1[], t_func2 func2[]);
 
