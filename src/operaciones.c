@@ -328,6 +328,7 @@ void SYS(t_MV *maquina, t_operador op1)
             printf("\n");
         }
         break;
+
     case 3: // String read
         printf("[%04X]: ", dirFisica);
         scanf("%s",str);
@@ -338,6 +339,11 @@ void SYS(t_MV *maquina, t_operador op1)
             i++;
         }
         maquina->memoria[maquina->registros[D] + i] = '\0';
+        break;
+    
+    case 4: // String write
+        printf("[%04X]: ", dirFisica);
+        printf("%s", maquina->memoria[dirFisica]);
         break;
     }
 }
