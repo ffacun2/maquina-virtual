@@ -201,7 +201,7 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
 
 void SYS(t_MV *maquina, t_operador op1)
 {
-    char *str, bin[33];
+    char *str, bin[33], caracter;
     int CX = maquina->registros[C] & 0xFFFF;
     int CL = maquina->registros[C] & 0xFF;
     int CH = (maquina->registros[C] >> 8) & 0xFF;
@@ -210,6 +210,7 @@ void SYS(t_MV *maquina, t_operador op1)
     // Splitter 1 corta de a bits
     // Splitter 2 corta de a bytes
     t_splitter splitter1, splitter2;
+    FILE *imagen;
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
@@ -351,7 +352,25 @@ void SYS(t_MV *maquina, t_operador op1)
         break;
     
     case 0xF: // Breakpoint
-
+        maquina->flag_ejecucion = 0;
+        imagen = fopen(maquina->nombreVMI, "wb");
+        fwrite(maquina,sizeof(maquina),1,imagen);
+        scanf("%c",&caracter);
+        switch (caracter)
+        {
+        case 'g': // go
+            maquina->flag_ejecucion = 1;
+            break;
+        case 'q': // quit
+            STOP(maquina);
+            break;
+        case '\n': // Enter
+            
+            break;
+        default:
+            break;
+        }
+        
         break;
     }
 }
@@ -445,6 +464,68 @@ void STOP(t_MV *mv)
     mv->flag_ejecucion = 0;
     mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS]>>16) & 0x0FFFF].tamano & 0x0FFFF;
 }
+// Calcular la dirección física en el segmento de pila (SS)
+int calcularDireccionFisica(t_MV *maquina, int segmento, int offset) {
+    return maquina->tabla_segmentos[(segmento >> 16) & 0xFFFF].base + offset;
+}
+
+void escribirEnMemoria(t_MV *maquina, int direccion_fisica, int valor) {
+    for (int i = 0; i < 4; i++) {
+        maquina->memoria[direccion_fisica + i] = (valor >> (8 * i)) & 0xFF;
+    }
+}
+
+int leerDesdeMemoria(t_MV *maquina, int direccion_fisica) {
+    int valor = 0;
+    for (int i = 0; i < 4; i++) {
+        valor |= (maquina->memoria[direccion_fisica + i] & 0xFF) << (8 * i);
+    }
+    return valor;
+}
+
+void PUSH(t_MV *maquina, t_operador op1){
+     printf("Ejecutando PUSH...\n");
+     int valor = getValor(op1, *maquina);
+     maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes  
+     int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+
+    // Guardar el valor en la pila
+    escribirEnMemoria(maquina, direccion_fisica, valor);
+
+}
+void POP(t_MV *maquina, t_operador op1) {
+    printf("Ejecutando POP...\n");
+    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+    
+    // Leer el valor de la pila (4 bytes)
+    int valor = leerDesdeMemoria(maquina, direccion_fisica);
+
+    maquina->registros[SP] += 4; // Incrementar el Stack Pointer (SP) en 4 bytes
+    setValor(op1, valor, maquina);
+}
+
+void RET(t_MV *maquina) {
+    printf("Ejecutando RET...\n");
+    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+    // Leer la dirección de retorno desde la pila (4 bytes)
+    int direccion_retorno = leerDesdeMemoria(maquina, direccion_fisica);
+
+    maquina->registros[SP] += 4; // Incrementar el Stack Pointer (SP) en 4 bytes
+    maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
+}
+
+void CALL(t_MV *maquina, t_operador op1) {
+    printf("Ejecutando CALL...\n");
+
+    // Guardar la dirección de retorno (IP actual) en la pila
+    int direccion_retorno = maquina->registros[IP];
+    maquina->registros[SP] -= 4; // Decrementar el Stack Pointer (SP) en 4 bytes
+    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+    escribirEnMemoria(maquina, direccion_fisica, direccion_retorno);
+
+    int direccion_subrutina = getValor(op1, *maquina);
+    maquina->registros[IP] = direccion_subrutina;// Actualizar el registro IP para saltar a la subrutina
+}
 
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
 {
@@ -475,4 +556,8 @@ void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
     func2[12] = &LDL;
     func2[13] = &LDH;
     func2[14] = &RND;
+    func2[15] = &PUSH;
+    func2[16] = &POP;
+    func2[17] = &RET;
+    func2[18] = &CALL;
 }
