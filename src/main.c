@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
        
         // Inicializar la máquina virtual
         if (mv.nombreVMX != NULL && lectura_vmx(&mv, param, size_param)) {
-            // genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
+            genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
         else if (mv.nombreVMI != NULL && lectura_vmi(&mv)) {
             // Si se activa el flag de disassembler, se escribe el disassembler
@@ -61,8 +61,8 @@ int main(int argc, char** argv) {
             escribirDisassembler(instrucciones, instruccion_size);
         }
         
-        // ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
-        // free(instrucciones);
+        ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
+        free(instrucciones);
     }
     else {
         printf("No se ha ingresado el nombre del archivo\n");
@@ -114,7 +114,10 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
         return 0;
     }
     else {
+        fseek(archivo, 0, SEEK_SET); // Muevo el puntero al byte 14 del archivo
         if (version == 1) {
+            fread(header, sizeof(char), 8, archivo); // Leo el header del archivo
+            header[8] = '\0'; // Aseguro que el header sea una cadena de caracteres
             //Leo tamaño de datos e inicializo la máquina virtual
             high = header[6] & 0x0FF;     // Leo el byte alto del tamaño de datos
             low = header[7] & 0x0FF;      // Leo el byte bajo del tamaño de datos
@@ -132,7 +135,6 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             inicializar_maquina(maquina, tamano);
         }
         else {
-            fseek(archivo, 0, SEEK_SET); // Muevo el puntero al byte 14 del archivo
             fread(header, sizeof(char), 18, archivo); // Leo el header del archivo
             header[18] = '\0'; // Aseguro que el header sea una cadena de caracteres
             
