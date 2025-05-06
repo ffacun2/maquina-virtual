@@ -165,7 +165,7 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
                 return 0;
             }
             
-            inicializo2(maquina,tamanio_segmentos,(header[16]<<8)|(header[17] & 0x0FF)); // Inicializo la máquina virtual      
+            inicializar_maquina2(maquina,tamanio_segmentos,(header[16]<<8)|(header[17] & 0x0FF)); // Inicializo la máquina virtual      
 
             // Cargo el segmento de código en la memoria de la máquina virtual
             cargoCodeSegment(maquina, code, tamanio_segmentos[2]); 
@@ -191,7 +191,7 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
                 printf("%02X ", maquina->memoria[i]&0x0FF);
                 x++;
             }
-            
+            printf("\n\n");
         }
     }
     fclose(archivo);

@@ -83,7 +83,7 @@ typedef struct {
 } t_instruccion;
 
 void inicializar_maquina(t_MV* MV, short int tamano);
-void inicializar_maquina2(t_MV* mv, short int tamanoCS, short int tamanoDS, short int tamanoES, short int tamanoSS, short int tamanoKS, short int offsetEntryPoint,int memoria);
+void inicializar_maquina2(t_MV* mv, short segmentos_size[], int empty_point);
 
 // Metodos de inicializacion para archivo vmi
 void inicializo_registros(t_MV* mv, int registros[]);

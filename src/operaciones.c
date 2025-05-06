@@ -530,6 +530,7 @@ void CALL(t_MV *maquina, t_operador op1) {
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
 {
     func0[0] = &STOP;
+    func0[1] = &RET;
 
     func1[0] = &SYS;
     func1[1] = &JMP;
@@ -540,6 +541,9 @@ void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
     func1[6] = &JNP;
     func1[7] = &JNN;
     func1[8] = &NOT;
+    func1[11] = &PUSH;
+    func1[12] = &POP;
+    func1[13] = &CALL;
 
     func2[0] = &MOV;
     func2[1] = &ADD;
@@ -556,8 +560,4 @@ void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
     func2[12] = &LDL;
     func2[13] = &LDH;
     func2[14] = &RND;
-    func2[15] = &PUSH;
-    func2[16] = &POP;
-    func2[17] = &RET;
-    func2[18] = &CALL;
 }

@@ -17,6 +17,7 @@ void inicializar_maquina(t_MV* mv, short int tamano) {
     mv->tabla_segmentos[(mv->registros[DS] >> 16) & 0x0FFFF].base = tamano;
     mv->tabla_segmentos[(mv->registros[DS] >> 16) & 0x0FFFF].tamano = TAMANO_MEMORIA - tamano;
     mv->registros[IP] = mv->registros[CS];
+    mv->offsetEntryPoint = 0;
 }
 
 /*
@@ -26,7 +27,7 @@ void inicializar_maquina(t_MV* mv, short int tamano) {
     @param segmentos_size: array de tamaños de segmentos [PS, KS, CS, DS, ES, SS]
     @param empty_point: offset del CS hasta el main del codigo assembler
 */
-void inicializo2 (t_MV* mv, short segmentos_size[],int empty_point) {
+void inicializar_maquina2 (t_MV* mv, short segmentos_size[],int empty_point) {
     int seg = 0;
     int base = 0;
     int reg[] = {KS, CS, DS, ES, SS};
@@ -49,6 +50,7 @@ void inicializo2 (t_MV* mv, short segmentos_size[],int empty_point) {
     }
     mv->registros[IP] = mv->registros[CS] + empty_point;
     mv->registros[SP] = mv->registros[SS] + mv->tabla_segmentos[mv->registros[SS] >> 16].tamano;
+    mv->offsetEntryPoint = empty_point;
 }
 
 /*
@@ -169,22 +171,22 @@ void cargoCodeSegment(t_MV* mv, char code[], int size) {
     @param instruccion_size: tamaño del array de instrucciones
 */
 void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_size) {
-    t_func0 t_func0[1];
-    t_func1 t_func1[10];
+    t_func0 t_func0[2];
+    t_func1 t_func1[14];
     t_func2 t_func2[15];
     int posicion = 0;
 
-    inicializo_vector_op(t_func0, t_func1, t_func2); // Inicializa los vectores de funciones
-    mv->registros[IP] = mv->registros[CS];           // Inicializa el registro IP con la dirección del segmento de código
-    mv->flag_ejecucion = 1;
-
-    while (mv->flag_ejecucion && mv->registros[IP] < instruccion_size) {
+    // Inicializa los vectores de funciones
+    inicializo_vector_op(t_func0, t_func1, t_func2); 
+    // Inicializa el registro IP con la dirección del segmento de código
+    mv->registros[IP] = mv->registros[CS] + mv->offsetEntryPoint; 
+    while (mv->flag_ejecucion && ((mv->registros[IP] & 0x0FFFF) < instruccion_size)) {
         posicion = mv->registros[IP] & 0x0FFFF;
         mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
 
         codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv);
         if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
-            t_func0[(instrucciones[posicion].opcode & 0x01F) - 0x0F](mv);
+            t_func0[0x0F - (instrucciones[posicion].opcode & 0x01F)](mv);
         else if (instrucciones[posicion].op1.tipo == NINGUNO)
             t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
         else
@@ -269,7 +271,7 @@ int getValor(t_operador op, t_MV maquina) {
         short codigoReg = (op.valor >> 4) & 0x0F;
         short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
-        short data_size = 4 - op.valor & 0x03; // Extraer el tamaño de los datos (0, 1, 2 o 3 bytes)
+        short data_size = 4 - (op.valor & 0x03); // Extraer el tamaño de los datos (0, 1, 2 o 3 bytes)
         int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0000FFFF].base + offsetReg + offset;
 
         if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[DS] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[DS] >> 16) & 0x0FFFF].tamano))
@@ -394,28 +396,32 @@ void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* in
         return;
     }
     else {
-        short index = (mv->registros[IP] >> 16) & 0x0FFFF;                                                                           // Extraer el índice del segmento
-        short offset = mv->registros[IP] & 0x0FFFF;                                                                                  // Extraer el offset
-        short dirFisic = mv->tabla_segmentos[index].base + offset;                                                                   // Calcular la dirección física
-        *instruccion_size = mv->tabla_segmentos[mv->registros[CS] >> 16].tamano - mv->tabla_segmentos[mv->registros[CS] >> 16].base; // Tamaño del segmento de código
-
-        while (dirFisic < *instruccion_size) {
+        short index = (mv->registros[IP] >> 16) & 0x0FFFF; // Extraer el índice del segmento
+        short offset;
+        short dirFisic = mv->tabla_segmentos[index].base; // Calcular la dirección física
+        *instruccion_size = size_code; // Tamaño del segmento de código
+        
+        mv->registros[IP] = mv->registros[IP] & 0xFFFF0000;
+        while (dirFisic < mv->tabla_segmentos[index].tamano) {
             // Leer la instrucción de la memoria
             char instruccion = mv->memoria[dirFisic];
-
+            
             int posicion = mv->registros[IP] & 0x0FFFF; // Obtener la posición de la instrucción en el array
-
+            
             mv->registros[IP]++;
 
-            (*instrucciones)[posicion].opcode = instruccion & 0x0FF; // Guardar el opcode en la instrucción actual
+            // Guardar el opcode en la instrucción actual
+            (*instrucciones)[posicion].opcode = instruccion & 0x0FF; 
             // Ejecutar la instrucción
             (*instrucciones)[posicion].op2.tipo = (instruccion >> 6) & 0x03; // Extraer el tipo de operando 2
             (*instrucciones)[posicion].op1.tipo = (instruccion >> 4) & 0x03; // Extraer el tipo de operando 1
 
-            valor_operacion(&(*instrucciones)[posicion].op2, *mv); // Obtener el valor del operando 2 del code segment
+            // Obtener el valor del operando 2 del code segment
+            valor_operacion(&(*instrucciones)[posicion].op2, *mv); 
             mv->registros[IP] += (*instrucciones)[posicion].op2.tipo;
 
-            valor_operacion(&(*instrucciones)[posicion].op1, *mv); // Obtener el valor del operando 1 del code segment
+            // Obtener el valor del operando 1 del code segment
+            valor_operacion(&(*instrucciones)[posicion].op1, *mv); 
             mv->registros[IP] += (*instrucciones)[posicion].op1.tipo;
 
             offset = mv->registros[IP] & 0x0FFFF;
