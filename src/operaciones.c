@@ -515,22 +515,22 @@ void RET(t_MV *maquina) {
 }
 
 void CALL(t_MV *maquina, t_operador op1) {
-    printf("Ejecutando CALL...\n");
-
-    // Guardar la dirección de retorno (IP actual) en la pila
-    int direccion_retorno = maquina->registros[IP];
-    maquina->registros[SP] -= 4; 
-    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-
-    // Almacenar la dirección de retorno en la pila en orden big-endian
-    for (int i = 3; i >= 0; i--) {
-        maquina->memoria[direccion_fisica + i] = (direccion_retorno >> (8 * (3 - i))) & 0xFF;
+   printf("Ejecutando CALL...\n");
+   int direccion_retorno = maquina->registros[IP];// Guardar la dirección de retorno (IP actual) en la pila
+   maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
+    if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
+        maquina->registros[SP] += 4; // Revertir el decremento
+        error(maquina, 3); // Error: Stack Overflow
     }
-    
-    int direccion_subrutina = getValor(op1, *maquina);
-
-    // Actualizar el registro IP para saltar a la subrutina
-    maquina->registros[IP] = direccion_subrutina;
+    else{
+     int valor = getValor(op1, *maquina);
+     int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+     // Almacenar el valor en la pila en orden big-endian
+     for (int i = 3; i >= 0; i--) {
+        maquina->memoria[direccion_fisica + i] = (valor >> (8 * (3 - i))) & 0xFF;
+    }
+    maquina->registros[IP] = valor;   // Actualizar el registro IP para saltar a la subrutina
+    }
 }
 
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
