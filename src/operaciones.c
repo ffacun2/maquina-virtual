@@ -348,7 +348,7 @@ void SYS(t_MV *maquina, t_operador op1)
         break;
     
     case 7: // Clear screen
-        clrscr();
+        // clrscr();
         break;
     
     case 0xF: // Breakpoint
@@ -525,6 +525,11 @@ void CALL(t_MV *maquina, t_operador op1) {
     JMP(maquina, op1);
     }
 }
+
+void RET (t_MV *maquina) {
+
+}
+
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
 {
     func0[0] = &STOP;

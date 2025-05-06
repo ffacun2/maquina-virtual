@@ -184,13 +184,13 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
         posicion = mv->registros[IP] & 0x0FFFF;
         mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
 
-        codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv);
-        if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
-            t_func0[0x0F - (instrucciones[posicion].opcode & 0x01F)](mv);
-        else if (instrucciones[posicion].op1.tipo == NINGUNO)
-            t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
-        else
-            t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
+        if (codOperacionValido((instrucciones[posicion].opcode & 0x01F), *mv) )
+            if (instrucciones[posicion].op1.tipo == NINGUNO && instrucciones[posicion].op2.tipo == NINGUNO)
+                t_func0[0x0F - (instrucciones[posicion].opcode & 0x01F)](mv);
+            else if (instrucciones[posicion].op1.tipo == NINGUNO)
+                t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
+            else
+                t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
     }
 }
 
@@ -346,9 +346,17 @@ void setValor(t_operador op, int valor, t_MV* maquina) {
     Verifica si el codigo de operacion se encuentra dentro de los disponibles
     En caso de que no se encuentre se lanza -> Error: Operacion no valida y se corta la ejecucion
 */
-void codOperacionValido(int cod_op, t_MV mv) {
-    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || cod_op == 0x0F))
+int codOperacionValido(int cod_op, t_MV mv) {
+    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || cod_op == 0x0F) && mv.version == 1) {
         error(&mv, 1);
+        return 0;
+    }
+    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) 
+        || (cod_op >= 0x0B && cod_op <= 0x0D) ||(cod_op >= 0x0E && cod_op <= 0x0F)) && mv.version == 2) {
+        error(&mv, 1);
+        return 0;
+    }
+    return 1;
 }
 
 /*

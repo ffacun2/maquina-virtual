@@ -62,6 +62,7 @@ typedef struct MV {
     int flag_d;
     int memory_size;
     int offsetEntryPoint;
+    int version;
 } t_MV;
 
 typedef enum {
@@ -99,7 +100,7 @@ void ejecutar_maquina(t_MV* maquina, t_instruccion*, int instruccion_size);
 void valor_operacion(t_operador* op, t_MV mv);
 int getValor(t_operador op, t_MV mv);
 void setValor(t_operador op, int valor, t_MV* maquina);
-void codOperacionValido(int cod_op, t_MV mv);
+int codOperacionValido(int cod_op, t_MV mv);
 void error(t_MV* mv, int errorCode);
 void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* instruccion_size);
 
