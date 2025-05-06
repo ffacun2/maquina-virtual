@@ -525,6 +525,23 @@ void CALL(t_MV *maquina, t_operador op1) {
     JMP(maquina, op1);
     }
 }
+void RET(t_MV *maquina) {
+    printf("Ejecutando RET...\n");
+    // Verificar Stack Underflow
+    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano) {
+        error(maquina, 3); // Error: Stack Underflow
+    }
+    else{
+    // Calcular la dirección física en el segmento de pila (SS)
+    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+
+    int direccion_retorno = 0;
+    for (int i = 0; i < 4; i++) {
+        direccion_retorno |= (maquina->memoria[direccion_fisica + i] & 0xFF) << (8 * i);
+    }
+    maquina->registros[SP] += 4; // Incrementar el Stack Pointer (SP) en 4 bytes
+    maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
+}
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
 {
     func0[0] = &STOP;
