@@ -19,8 +19,6 @@ int deBinarioStringAInt(char bin[]);
 void deIntABinarioString(int nro, char bin[]);
 void Salto(t_MV *maquina, t_operador op1);
 int calcularDireccionFisica(t_MV *maquina, int segmento, int desplazamiento);
-void escribirEnMemoria(t_MV *maquina, int direccion_fisica, int valor);
-int leerDesdeMemoria(t_MV *maquina, int direccion_fisica);
 // funciones con 2 operandos
 void MOV(t_MV *maquina, t_operador op1, t_operador op2);
 void ADD(t_MV *maquina, t_operador op1, t_operador op2);
