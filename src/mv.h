@@ -95,7 +95,6 @@ int cargoParamSegment(t_MV* mv, char **param, int size);
 void cargoCodeSegment(t_MV* mv, char code[], int size);
 void cargoConstSegment(t_MV* mv, char constant[], int size);
 
-void inicializo2(t_MV* mv, short segmentos_size[],int empty_point);
 void ejecutar_maquina(t_MV* maquina, t_instruccion*, int instruccion_size);
 void valor_operacion(t_operador* op, t_MV mv);
 int getValor(t_operador op, t_MV mv);

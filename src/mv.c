@@ -195,7 +195,7 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
 }
 
 /*
-    Leo el valor del operando de acuerdo a su tipo en el code segment.
+    Formo el valor del operando de acuerdo a su tipo en el code segment.
     Memoria -> 3 bytes
     Inmediato -> 2 bytes
     Registro -> 1 byte
