@@ -474,7 +474,7 @@ void PUSH(t_MV *maquina, t_operador op1){
     maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
     if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
         maquina->registros[SP] += 4; // Revertir el decremento
-        error(maquina, 3); // Error: Stack Overflow
+        error(maquina, 5); // Error: Stack Overflow
     }
     else{
      int valor = getValor(op1, *maquina);
@@ -490,7 +490,7 @@ void POP(t_MV *maquina, t_operador op1) {
 
     // Verificar Stack Underflow
     if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano) {
-        error(maquina, 3); // Error: Stack Underflow
+        error(maquina, 6); // Error: Stack Underflow
     }
     else{
     // Calcular la dirección física en el segmento de pila (SS)
@@ -512,7 +512,7 @@ void CALL(t_MV *maquina, t_operador op1) {
     // Verificar Stack Overflow
     if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
         maquina->registros[SP] += 4; // Revertir el decremento
-        error(maquina, 3); // Error: Stack Overflow
+        error(maquina, 5); // Error: Stack Overflow
     }
     else{
         
@@ -529,7 +529,7 @@ void RET(t_MV *maquina) {
     printf("Ejecutando RET...\n");
     // Verificar Stack Underflow
     if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano) {
-        error(maquina, 3); // Error: Stack Underflow
+        error(maquina, 6); // Error: Stack Underflow
     }
     else{
     // Calcular la dirección física en el segmento de pila (SS)
