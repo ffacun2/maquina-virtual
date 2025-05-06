@@ -469,20 +469,6 @@ int calcularDireccionFisica(t_MV *maquina, int segmento, int offset) {
     return maquina->tabla_segmentos[(segmento >> 16) & 0xFFFF].base + offset;
 }
 
-void escribirEnMemoria(t_MV *maquina, int direccion_fisica, int valor) {
-    for (int i = 0; i < 4; i++) {
-        maquina->memoria[direccion_fisica + i] = (valor >> (8 * i)) & 0xFF;
-    }
-}
-
-int leerDesdeMemoria(t_MV *maquina, int direccion_fisica) {
-    int valor = 0;
-    for (int i = 0; i < 4; i++) {
-        valor |= (maquina->memoria[direccion_fisica + i] & 0xFF) << (8 * i);
-    }
-    return valor;
-}
-
 void PUSH(t_MV *maquina, t_operador op1){
     printf("Ejecutando PUSH...\n");
     maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
@@ -501,13 +487,21 @@ void PUSH(t_MV *maquina, t_operador op1){
 }
 void POP(t_MV *maquina, t_operador op1) {
     printf("Ejecutando POP...\n");
-    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-    
-    // Leer el valor de la pila (4 bytes)
-    int valor = leerDesdeMemoria(maquina, direccion_fisica);
 
-    maquina->registros[SP] += 4; // Incrementar el Stack Pointer (SP) en 4 bytes
-    setValor(op1, valor, maquina);
+    // Verificar Stack Underflow
+    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano) {
+        error(maquina, 3); // Error: Stack Underflow
+    }
+    else{
+    // Calcular la dirección física en el segmento de pila (SS)
+    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+
+    int valor = 0;
+    for (int i = 0; i < 4; i++) {
+        valor = (valor << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
+    }
+    maquina->registros[SP] += 4;
+    setValor(op1, valor, maquina);}
 }
 
 void RET(t_MV *maquina) {
