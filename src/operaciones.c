@@ -503,7 +503,28 @@ void POP(t_MV *maquina, t_operador op1) {
     maquina->registros[SP] += 4;
     setValor(op1, valor, maquina);}
 }
+void CALL(t_MV *maquina, t_operador op1) {
+    printf("Ejecutando CALL...\n");
 
+    int direccion_retorno = maquina->registros[IP];
+    maquina->registros[SP] -= 4;
+
+    // Verificar Stack Overflow
+    if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
+        maquina->registros[SP] += 4; // Revertir el decremento
+        error(maquina, 3); // Error: Stack Overflow
+    }
+    else{
+        
+    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+    for (int i = 3; i >= 0; i--) {
+        maquina->memoria[direccion_fisica + i] = (direccion_retorno >> (8 * (3 - i))) & 0xFF;
+    }
+
+    maquina->registros[IP] = getValor(op1, *maquina); // Actualizar el registro IP con la dirección de destino
+    JMP(maquina, op1);
+    }
+}
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
 {
     func0[0] = &STOP;
