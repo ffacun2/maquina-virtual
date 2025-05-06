@@ -484,14 +484,20 @@ int leerDesdeMemoria(t_MV *maquina, int direccion_fisica) {
 }
 
 void PUSH(t_MV *maquina, t_operador op1){
-     printf("Ejecutando PUSH...\n");
+    printf("Ejecutando PUSH...\n");
+    maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
+    if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
+        maquina->registros[SP] += 4; // Revertir el decremento
+        error(maquina, 3); // Error: Stack Overflow
+    }
+    else{
      int valor = getValor(op1, *maquina);
-     maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes  
      int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-
-    // Guardar el valor en la pila
-    escribirEnMemoria(maquina, direccion_fisica, valor);
-
+     // Almacenar el valor en la pila en orden big-endian
+     for (int i = 3; i >= 0; i--) {
+        maquina->memoria[direccion_fisica + i] = (valor >> (8 * (3 - i))) & 0xFF;
+    }
+    }
 }
 void POP(t_MV *maquina, t_operador op1) {
     printf("Ejecutando POP...\n");
