@@ -504,7 +504,8 @@ void CALL(t_MV *maquina, t_operador op1)
     JMP(maquina, op1);                          // Salto a la dirección de destino
 }
 void popValor(t_MV *maquina, int *valor){
-    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano)
+    int ss_selector = (maquina->registros[SS] >> 16) & 0xFFFF;
+    if (maquina->registros[SP] + 4 > maquina->tabla_segmentos[ss_selector].base + maquina->tabla_segmentos[ss_selector].tamano)
     {
         error(maquina, 6); // Error: Stack Underflow
     }
