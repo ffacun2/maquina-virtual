@@ -15,7 +15,8 @@
 #define TAM_CELDA 4
 #define null -1
 
-enum {
+enum
+{
     // Segmentos
     // Code Segment
     CS = 0,
@@ -47,61 +48,67 @@ enum {
     F = 15
 };
 
-typedef struct {
+typedef struct
+{
     short int base;
     short int tamano;
 } t_tabla_segmento;
 
-typedef struct MV {
+typedef struct MV
+{
     char memoria[TAMANO_MEMORIA];
     int registros[CANT_REGISTROS];
     t_tabla_segmento tabla_segmentos[CANT_SEGMENTOS];
     int flag_ejecucion;
-    const char* nombreVMI;
-    const char* nombreVMX;
+    const char *nombreVMI;
+    const char *nombreVMX;
     int flag_d;
+    int flag_breakpoint;
     int memory_size;
     int offsetEntryPoint;
     int version;
 } t_MV;
 
-typedef enum {
+typedef enum
+{
     NINGUNO = 0,
     REGISTRO = 1,
     INMEDIATO = 2,
     MEMORIA = 3
 } t_operando;
 
-typedef struct {
+typedef struct
+{
     int valor;
     t_operando tipo;
 } t_operador;
 
-typedef struct {
+typedef struct
+{
     char opcode;
     t_operador op1;
     t_operador op2;
 } t_instruccion;
 
-void inicializar_maquina(t_MV* MV, short int tamano);
-void inicializar_maquina2(t_MV* mv, short segmentos_size[], int empty_point);
+void inicializar_maquina(t_MV *MV, short int tamano);
+void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point);
 
 // Metodos de inicializacion para archivo vmi
-void inicializo_registros(t_MV* mv, int registros[]);
-void inicializo_segmentos(t_MV* mv, int segmentos[]);
-void inicializo_memoria(t_MV* mv, char memoria[], int size);
+void inicializo_registros(t_MV *mv, int registros[]);
+void inicializo_segmentos(t_MV *mv, int segmentos[]);
+void inicializo_memoria(t_MV *mv, char memoria[], int size);
 
-//Metodos de carga de version 2 archivo vmx
-int cargoParamSegment(t_MV* mv, char **param, int size);
-void cargoCodeSegment(t_MV* mv, char code[], int size);
-void cargoConstSegment(t_MV* mv, char constant[], int size);
+// Metodos de carga de version 2 archivo vmx
+int cargoParamSegment(t_MV *mv, char **param, int size);
+void cargoCodeSegment(t_MV *mv, char code[], int size);
+void cargoConstSegment(t_MV *mv, char constant[], int size);
 
-void ejecutar_maquina(t_MV* maquina, t_instruccion*, int instruccion_size);
-void valor_operacion(t_operador* op, t_MV mv);
+void ejecutar_maquina(t_MV *maquina, t_instruccion *, int instruccion_size);
+void valor_operacion(t_operador *op, t_MV mv);
 int getValor(t_operador op, t_MV mv);
-void setValor(t_operador op, int valor, t_MV* maquina);
+void setValor(t_operador op, int valor, t_MV *maquina);
 int codOperacionValido(int cod_op, t_MV mv);
-void error(t_MV* mv, int errorCode);
-void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* instruccion_size);
+void error(t_MV *mv, int errorCode);
+void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size);
 
 #endif // MV_H_INCLUDED
