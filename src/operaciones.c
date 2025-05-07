@@ -468,22 +468,29 @@ void STOP(t_MV *mv)
 int calcularDireccionFisica(t_MV *maquina, int segmento, int offset) {
     return maquina->tabla_segmentos[(segmento >> 16) & 0xFFFF].base + offset;
 }
-
-void PUSH(t_MV *maquina, t_operador op1){
-    printf("Ejecutando PUSH...\n");
-    maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
+void pushValor(t_MV *maquina, int valor) {
+     maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
     if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
         maquina->registros[SP] += 4; // Revertir el decremento
         error(maquina, 5); // Error: Stack Overflow
     }
     else{
-     int valor = getValor(op1, *maquina);
      int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
      // Almacenar el valor en la pila en orden big-endian
      for (int i = 3; i >= 0; i--) {
         maquina->memoria[direccion_fisica + i] = (valor >> (8 * (3 - i))) & 0xFF;
     }
     }
+    
+}
+void PUSH(t_MV *maquina, t_operador op1){
+    printf("Ejecutando PUSH...\n");
+    pushValor(maquina, getValor(op1, *maquina));
+}
+void CALL(t_MV *maquina, t_operador op1) {
+    printf("Ejecutando CALL...\n");
+    pushValor(maquina, maquina->registros[IP]); // Dirección de retorno
+    JMP(maquina, op1); // Salto a la dirección de destino
 }
 void POP(t_MV *maquina, t_operador op1) {
     printf("Ejecutando POP...\n");
@@ -503,28 +510,7 @@ void POP(t_MV *maquina, t_operador op1) {
     maquina->registros[SP] += 4;
     setValor(op1, valor, maquina);}
 }
-void CALL(t_MV *maquina, t_operador op1) {
-    printf("Ejecutando CALL...\n");
 
-    int direccion_retorno = maquina->registros[IP];
-    maquina->registros[SP] -= 4;
-
-    // Verificar Stack Overflow
-    if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
-        maquina->registros[SP] += 4; // Revertir el decremento
-        error(maquina, 5); // Error: Stack Overflow
-    }
-    else{
-        
-    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-    for (int i = 3; i >= 0; i--) {
-        maquina->memoria[direccion_fisica + i] = (direccion_retorno >> (8 * (3 - i))) & 0xFF;
-    }
-
-    maquina->registros[IP] = getValor(op1, *maquina); // Actualizar el registro IP con la dirección de destino
-    JMP(maquina, op1);
-    }
-}
 void RET(t_MV *maquina) {
     printf("Ejecutando RET...\n");
     // Verificar Stack Underflow
