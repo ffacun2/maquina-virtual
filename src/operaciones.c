@@ -503,11 +503,7 @@ void CALL(t_MV *maquina, t_operador op1)
     pushValor(maquina, maquina->registros[IP]); // Dirección de retorno
     JMP(maquina, op1);                          // Salto a la dirección de destino
 }
-void POP(t_MV *maquina, t_operador op1)
-{
-    printf("Ejecutando POP...\n");
-
-    // Verificar Stack Underflow
+void popValor(t_MV *maquina, int *valor){
     if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano)
     {
         error(maquina, 6); // Error: Stack Underflow
@@ -517,38 +513,27 @@ void POP(t_MV *maquina, t_operador op1)
         // Calcular la dirección física en el segmento de pila (SS)
         int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
 
-        int valor = 0;
+        *valor = 0;
         for (int i = 0; i < 4; i++)
         {
-            valor = (valor << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
+            *valor = (*valor << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
         }
-        maquina->registros[SP] += 4;
-        setValor(op1, valor, maquina);
-    }
+        maquina->registros[SP] += 4;}
+}
+void POP(t_MV *maquina, t_operador op1)
+{
+    int valor;
+    printf("Ejecutando POP...\n");
+    popValor(maquina, &valor);
+    setValor(op1, valor, maquina);
 }
 
 void RET(t_MV *maquina)
 {
+    int direccion_retorno;
     printf("Ejecutando RET...\n");
-    // Verificar Stack Underflow
-    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano)
-    {
-        error(maquina, 6); // Error: Stack Underflow
-    }
-    else
-    {
-        // Calcular la dirección física en el segmento de pila (SS)
-        int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-
-        int direccion_retorno = 0;
-        // Leer la dirección de retorno en formato big-endian
-        for (int i = 0; i < 4; i++)
-        {
-            direccion_retorno = (direccion_retorno << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
-        }
-        maquina->registros[SP] += 4;                // Incrementar el Stack Pointer (SP) en 4 bytes
-        maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
-    }
+    popValor(maquina, &direccion_retorno);
+    maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
 }
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
 {
