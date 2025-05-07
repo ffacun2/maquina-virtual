@@ -4,6 +4,7 @@
 #include "mv.h"
 #include "splitter.h"
 #include <conio.h>
+#include "generador_imagen.h"
 
 // A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
 // nos permite detectar los valores negativos.
@@ -211,6 +212,7 @@ void SYS(t_MV *maquina, t_operador op1)
     // Splitter 2 corta de a bytes
     t_splitter splitter1, splitter2;
     FILE *imagen;
+    t_imagen img;
     splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
@@ -310,12 +312,13 @@ void SYS(t_MV *maquina, t_operador op1)
                         printf("0o%011o ", x);
                         break;
                     case 1: // Escribe caracteres
-                        for (j = 0; j < CH; j++){
+                        for (j = 0; j < CH; j++)
+                        {
                             x = maquina->memoria[dirFisica + i * CH + j] & 0x00FF;
-                            if (x > 0  && x < 255 && isprint(x))
-                            printf("%c", x);
+                            if (x > 0 && x < 255 && isprint(x))
+                                printf("%c", x);
                             else
-                            printf(".");
+                                printf(".");
                         }
                         printf(" ");
                         break;
@@ -333,7 +336,7 @@ void SYS(t_MV *maquina, t_operador op1)
 
     case 3: // String read
         printf("[%04X]: ", dirFisica);
-        scanf("%s",str);
+        scanf("%s", str);
         i = 0;
         while (str[i] != '\0' && i < CX)
         {
@@ -342,20 +345,21 @@ void SYS(t_MV *maquina, t_operador op1)
         }
         maquina->memoria[maquina->registros[D] + i] = '\0';
         break;
-    
+
     case 4: // String write
         printf("[%04X]: %s", dirFisica, maquina->memoria[dirFisica]);
         break;
-    
+
     case 7: // Clear screen
         // clrscr();
         break;
-    
+
     case 0xF: // Breakpoint
         maquina->flag_ejecucion = 0;
+        img = generarImagen(*maquina);
         imagen = fopen(maquina->nombreVMI, "wb");
-        fwrite(maquina,sizeof(maquina),1,imagen);
-        scanf("%c",&caracter);
+        fwrite(&img, sizeof(img), 1, imagen);
+        scanf("%c", &caracter);
         switch (caracter)
         {
         case 'g': // go
@@ -365,12 +369,12 @@ void SYS(t_MV *maquina, t_operador op1)
             STOP(maquina);
             break;
         case '\n': // Enter
-            
+
             break;
         default:
             break;
         }
-        
+
         break;
     }
 }
@@ -462,71 +466,86 @@ void STOP(t_MV *mv)
 {
     // printf("Ejecutando STOP...\n");
     mv->flag_ejecucion = 0;
-    mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS]>>16) & 0x0FFFF].tamano & 0x0FFFF;
+    mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano & 0x0FFFF;
 }
 // Calcular la dirección física en el segmento de pila (SS)
-int calcularDireccionFisica(t_MV *maquina, int segmento, int offset) {
+int calcularDireccionFisica(t_MV *maquina, int segmento, int offset)
+{
     return maquina->tabla_segmentos[(segmento >> 16) & 0xFFFF].base + offset;
 }
-void pushValor(t_MV *maquina, int valor) {
-     maquina->registros[SP] -= 4;  // Decrementar el Stack Pointer (SP) en 4 bytes 
-    if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base) {
+void pushValor(t_MV *maquina, int valor)
+{
+    maquina->registros[SP] -= 4; // Decrementar el Stack Pointer (SP) en 4 bytes
+    if (maquina->registros[SP] < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].base)
+    {
         maquina->registros[SP] += 4; // Revertir el decremento
-        error(maquina, 5); // Error: Stack Overflow
+        error(maquina, 5);           // Error: Stack Overflow
     }
-    else{
-     int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-     // Almacenar el valor en la pila en orden big-endian
-     for (int i = 3; i >= 0; i--) {
-        maquina->memoria[direccion_fisica + i] = (valor >> (8 * (3 - i))) & 0xFF;
+    else
+    {
+        int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+        // Almacenar el valor en la pila en orden big-endian
+        for (int i = 3; i >= 0; i--)
+        {
+            maquina->memoria[direccion_fisica + i] = (valor >> (8 * (3 - i))) & 0xFF;
+        }
     }
-    }
-    
 }
-void PUSH(t_MV *maquina, t_operador op1){
+void PUSH(t_MV *maquina, t_operador op1)
+{
     printf("Ejecutando PUSH...\n");
     pushValor(maquina, getValor(op1, *maquina));
 }
-void CALL(t_MV *maquina, t_operador op1) {
+void CALL(t_MV *maquina, t_operador op1)
+{
     printf("Ejecutando CALL...\n");
     pushValor(maquina, maquina->registros[IP]); // Dirección de retorno
-    JMP(maquina, op1); // Salto a la dirección de destino
+    JMP(maquina, op1);                          // Salto a la dirección de destino
 }
-void POP(t_MV *maquina, t_operador op1) {
+void POP(t_MV *maquina, t_operador op1)
+{
     printf("Ejecutando POP...\n");
 
     // Verificar Stack Underflow
-    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano) {
+    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano)
+    {
         error(maquina, 6); // Error: Stack Underflow
     }
-    else{
-    // Calcular la dirección física en el segmento de pila (SS)
-    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+    else
+    {
+        // Calcular la dirección física en el segmento de pila (SS)
+        int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
 
-    int valor = 0;
-    for (int i = 0; i < 4; i++) {
-        valor = (valor << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
+        int valor = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            valor = (valor << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
+        }
+        maquina->registros[SP] += 4;
+        setValor(op1, valor, maquina);
     }
-    maquina->registros[SP] += 4;
-    setValor(op1, valor, maquina);}
 }
 
-void RET(t_MV *maquina) {
+void RET(t_MV *maquina)
+{
     printf("Ejecutando RET...\n");
     // Verificar Stack Underflow
-    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano) {
+    if (maquina->registros[SP] >= maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0xFFFF].tamano)
+    {
         error(maquina, 6); // Error: Stack Underflow
     }
-    else{
-    // Calcular la dirección física en el segmento de pila (SS)
-    int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
+    else
+    {
+        // Calcular la dirección física en el segmento de pila (SS)
+        int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
 
-    int direccion_retorno = 0;
-    for (int i = 0; i < 4; i++) {
-        direccion_retorno |= (maquina->memoria[direccion_fisica + i] & 0xFF) << (8 * i);
-    }
-    maquina->registros[SP] += 4; // Incrementar el Stack Pointer (SP) en 4 bytes
-    maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
+        int direccion_retorno = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            direccion_retorno |= (maquina->memoria[direccion_fisica + i] & 0xFF) << (8 * i);
+        }
+        maquina->registros[SP] += 4;                // Incrementar el Stack Pointer (SP) en 4 bytes
+        maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
     }
 }
 void inicializo_vector_op(t_func0 func0[], t_func1 func1[], t_func2 func2[])
