@@ -540,9 +540,9 @@ void RET(t_MV *maquina)
         int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
 
         int direccion_retorno = 0;
-        for (int i = 0; i < 4; i++)
-        {
-            direccion_retorno |= (maquina->memoria[direccion_fisica + i] & 0xFF) << (8 * i);
+     // Leer la dirección de retorno en formato big-endian
+        for (int i = 0; i < 4; i++) {
+            direccion_retorno = (direccion_retorno << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
         }
         maquina->registros[SP] += 4;                // Incrementar el Stack Pointer (SP) en 4 bytes
         maquina->registros[IP] = direccion_retorno; // Actualizar el registro IP con la dirección de retorno
