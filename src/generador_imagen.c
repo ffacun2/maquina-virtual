@@ -1,5 +1,5 @@
 #include "generador_imagen.h"
-
+#include <stdint.h>
 void generarImagen(t_MV *mv)
 {
     int  descriptor;
@@ -12,9 +12,9 @@ void generarImagen(t_MV *mv)
         //Header 
         // Identificador "VMI25"
         fwrite("VMI25", 1, 5, arch);
-        int version = 1;
+        uint8_t version = 1;
         fwrite(&version, 1, 1, arch);
-        int tam_kib = mv->memory_size/ 1024;
+        uint16_t tam_kib =(uint16_t) mv->memory_size/ 1024;
         fwrite(&tam_kib, sizeof(int), 1, arch);
         // Registros 
         for (int i = 0; i < CANT_REGISTROS; i++) {
