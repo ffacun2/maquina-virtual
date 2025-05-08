@@ -3,8 +3,7 @@
 void generarImagen(t_MV *mv)
 {
     int reg;
-    int base;
-    int tam;
+    int  descriptor;
     FILE *arch = fopen(mv->nombreVMI, "wb");
     if (arch == NULL)
     {
@@ -24,10 +23,8 @@ void generarImagen(t_MV *mv)
          fwrite(&reg, sizeof(int), 1, arch);}
 
     for (int i = 0; i < CANT_SEGMENTOS; i++) {
-        base = mv->tabla_segmentos[i].base;
-        tam  = mv->tabla_segmentos[i].tamano;
-        fwrite(&base, sizeof(int), 1, arch);
-        fwrite(&tam,  sizeof(int), 1, arch);
+        descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
+        fwrite(&descriptor, sizeof(int), 1, arch);
     }
 
     // Memoria principal
