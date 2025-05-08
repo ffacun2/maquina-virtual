@@ -177,9 +177,9 @@ void RND(t_MV* maquina, t_operador op1, t_operador op2) {
 
 void SYS(t_MV* maquina, t_operador op1) {
     char* str, bin[33], caracter;
-    int CX = maquina->registros[C] & 0xFFFF;
-    int CL = maquina->registros[C] & 0xFF;
-    int CH = (maquina->registros[C] >> 8) & 0xFF;
+    int CX = maquina->registros[C] & 0x0FFFF;
+    int CL = maquina->registros[C] & 0x0FF;
+    int CH = (maquina->registros[C] >> 8) & 0x0FF;
     int i, j, k, x, dirFisica;
     int salidas[32], z[32];
     // Splitter 1 corta de a bits
