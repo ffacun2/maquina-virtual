@@ -313,8 +313,9 @@ int getValor(t_operador op, t_MV maquina)
         short data_size = 4 - (op.valor & 0x03); // Extraer el tamaño de los datos (0, 1, 2 o 3 bytes)
         int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
         
-        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano))
+        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano)) {    
             error(&maquina, 3); // Error: Overflow de memoria
+        }    
         else
         {
             for (int i = 0; i < data_size; i++)

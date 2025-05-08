@@ -342,14 +342,14 @@ void SYS(t_MV* maquina, t_operador op1) {
 void Salto(t_MV* mv, t_operador op1) {                                                                                      // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
     int valor = getValor(op1, *mv);                                                    // El valor del operando es la direccion logica a la que queremos saltar         // Extraer offset (los 16 bits bajos)
     short pos = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base + valor; // Verificar que esté dentro del segmento de codigo
-    short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
+    short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
     // printf("valor salto: %04X, posicion:%04X, size:%04X\n", valor, pos, size);
 
-    if (pos > size)
+    if (pos > size){
         error(mv, 3);
+    }
     else {
-        mv->registros[IP] = pos;
-        // printf("Salto a direccion : 0x%04X\n", pos);
+        mv->registros[IP] = (mv->registros[IP] & 0xFFFF0000) + valor;
     }
 }
 void JMP(t_MV* maquina, t_operador op1) {
