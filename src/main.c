@@ -24,7 +24,6 @@ int main(int argc, char **argv)
     mv.flag_ejecucion = 1;  // Inicializo el flag de ejecución
     mv.flag_breakpoint = 0; // Inicializo el flag breakpoint
     mv.flag_d = 0;          // Inicializo el flag de disassembler
-
     // Verifico que se haya ingresado el nombre del archivo
     if (argc > 1)
     {
@@ -74,6 +73,8 @@ int main(int argc, char **argv)
 
         ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
         free(instrucciones);
+        
+
     }
     else
     {
@@ -110,7 +111,7 @@ int lectura_vmx(t_MV *maquina, char **param, int cant_param)
     short tamano;
     short tamanio_segmentos[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     int size_param = 0;
-
+    
     // Verifico que el archivo se haya abierto correctamente
     if (archivo == NULL)
     {
@@ -121,11 +122,12 @@ int lectura_vmx(t_MV *maquina, char **param, int cant_param)
 
     fread(modelo, sizeof(char), 5, archivo);   // Leo el modelo (VMX25) del archivo
     fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
-
+    printf("Modelo: %s, Version: %d\n", modelo, version);
     if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2))
     {
         fclose(archivo);
         maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
+        printf("Aca");
         return 0;
     }
     else
@@ -155,6 +157,7 @@ int lectura_vmx(t_MV *maquina, char **param, int cant_param)
         }
         else
         {
+            
             maquina->version = 2;                     // Asigno la version a la maquina virtual
             fread(header, sizeof(char), 18, archivo); // Leo el header del archivo
             header[18] = '\0';                        // Aseguro que el header sea una cadena de caracteres

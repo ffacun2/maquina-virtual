@@ -56,7 +56,7 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point)
         }
     }
     mv->registros[IP] = mv->registros[CS] + empty_point;
-    mv->registros[SP] = mv->registros[SS] + mv->tabla_segmentos[mv->registros[SS] >> 16].tamano;
+    mv->registros[SP] = mv->registros[SS] + mv->tabla_segmentos[(mv->registros[SS] >> 16)& 0x0FFFF].tamano;
     mv->offsetEntryPoint = empty_point;
 }
 
