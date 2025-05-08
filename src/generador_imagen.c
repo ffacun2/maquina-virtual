@@ -9,7 +9,6 @@ void generarImagen(t_MV *mv)
     if (arch == NULL)
     {
         printf("Error al abrir el archivo de imagen\n");
-        return;
     }
     else{
         //Header 
