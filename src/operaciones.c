@@ -47,7 +47,7 @@ void deIntABinarioString(int nro, char bin[]) {
 }
 
 void MOV(t_MV* maquina, t_operador op1, t_operador op2) {
-    // printf("Ejecutando MOV...\n");
+    printf("Ejecutando MOV...\n");
     int b = getValor(op2, *maquina);
     setValor(op1, b, maquina);
 }
@@ -419,22 +419,24 @@ void STOP(t_MV* mv) {
     mv->registros[IP] = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano & 0x0FFFF;
 }
 // Calcular la dirección física en el segmento de pila (SS)
-int calcularDireccionFisica(t_MV* maquina, int segmento, int offset) {
-    return maquina->tabla_segmentos[(segmento >> 16) & 0x0FFFF].base + offset;
+int calcularDireccionFisica(t_MV maquina, int segmento, int offset) {
+    return maquina.tabla_segmentos[segmento].base + offset;
 }
 void pushValor(t_MV* maquina, int valor) {
-    printf("pusheando valor:%d", valor);
+    printf("pusheando valor:%d\n", valor);
     maquina->registros[SP] -= 4; // Decrementar el Stack Pointer (SP) en 4 bytes
-    if ((maquina->registros[SP] & 0x0FFFF) < maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0x0FFFF].base) {
+    int base = maquina->tabla_segmentos[(maquina->registros[SS] >> 16) & 0x0FFFF].base;
+    int direccion_fisica = calcularDireccionFisica(*maquina, ((maquina->registros[SS] >> 16) & 0x0FFFF), (maquina->registros[SP] & 0x0FFFF));
+    
+    if (direccion_fisica < base) {
         maquina->registros[SP] += 4; // Revertir el decremento
         error(maquina, 5);           // Error: Stack Overflow
     }
     else {
-        printf("else");
-        int direccion_fisica = calcularDireccionFisica(maquina, (maquina->registros[SS] >> 16) & 0x0FFFF, maquina->registros[SP] & 0x0FFFF);
         // Almacenar el valor en la pila en orden big-endian
-        for (int i = 3; i >= 0; i--) {
-            maquina->memoria[direccion_fisica - i] = (valor >> (8 * i)) & 0x0FF;
+        printf("Direccion fisica: %04X\n", direccion_fisica);
+        for (int i = 0; i< TAM_CELDA; i++) {
+            maquina->memoria[direccion_fisica + i] = (valor >> (8 *(3 - i))) & 0x0FF;
         }
     }
 }
@@ -448,17 +450,17 @@ void CALL(t_MV* maquina, t_operador op1) {
     JMP(maquina, op1);                          // Salto a la dirección de destino
 }
 void popValor(t_MV* maquina, int* valor) {
-    int ss_selector = (maquina->registros[SS] >> 16) & 0xFFFF;
-    if (maquina->registros[SP] + 4 > maquina->tabla_segmentos[ss_selector].base + maquina->tabla_segmentos[ss_selector].tamano) {
+    printf("Popeando valor: %d\n",valor);
+    int ss_selector = (maquina->registros[SS] >> 16) & 0x0FFFF;
+    int direccion_fisica = calcularDireccionFisica(*maquina, ((maquina->registros[SS] >> 16) & 0x0FFFF), (maquina->registros[SP] & 0x0FFFF));
+
+    if (direccion_fisica > maquina->tabla_segmentos[ss_selector].tamano) {
         error(maquina, 6); // Error: Stack Underflow
     }
     else {
-        // Calcular la dirección física en el segmento de pila (SS)
-        int direccion_fisica = calcularDireccionFisica(maquina, maquina->registros[SS], maquina->registros[SP]);
-
         *valor = 0;
         for (int i = 0; i < 4; i++) {
-            *valor = (*valor << 8) | (maquina->memoria[direccion_fisica + i] & 0xFF);
+            *valor = (*valor << 8) | (maquina->memoria[direccion_fisica + i] & 0x0FF);
         }
         maquina->registros[SP] += 4;
     }

@@ -18,7 +18,7 @@ void FuncionCC(t_MV *maquina, int resultado);
 int deBinarioStringAInt(char bin[]);
 void deIntABinarioString(int nro, char bin[]);
 void Salto(t_MV *maquina, t_operador op1);
-int calcularDireccionFisica(t_MV *maquina, int segmento, int desplazamiento);
+int calcularDireccionFisica(t_MV maquina, int segmento, int desplazamiento);
 void pushValor(t_MV *maquina, int valor);
 void popValor(t_MV *maquina, int *valor);
 // funciones con 2 operandos

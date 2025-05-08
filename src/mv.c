@@ -56,7 +56,7 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point)
         }
     }
     mv->registros[IP] = mv->registros[CS] + empty_point;
-    mv->registros[SP] = mv->registros[SS] + mv->tabla_segmentos[(mv->registros[SS] >> 16)& 0x0FFFF].tamano;
+    mv->registros[SP] = mv->registros[SS] + segmentos_size[5];
     mv->offsetEntryPoint = empty_point;
 }
 
@@ -311,16 +311,16 @@ int getValor(t_operador op, t_MV maquina)
         short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
         short data_size = 4 - (op.valor & 0x03); // Extraer el tamaño de los datos (0, 1, 2 o 3 bytes)
-        int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0000FFFF].base + offsetReg + offset;
-
-        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[DS] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[DS] >> 16) & 0x0FFFF].tamano))
+        int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
+        
+        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano))
             error(&maquina, 3); // Error: Overflow de memoria
         else
         {
             for (int i = 0; i < data_size; i++)
             {
                 valor <<= 8;
-                valor |= (maquina.memoria[dirFisic + i] & 0x000000FF);
+                valor |= (maquina.memoria[dirFisic + i] & 0x0FF);
             }
         }
         return valor;
@@ -350,8 +350,8 @@ void setValor(t_operador op, int valor, t_MV *maquina)
         short offsetReg = maquina->registros[codReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
         int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
-
-        if ((dirFisic < maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[DS] >> 16) & 0x0FFFF].tamano))
+        printf("reg: %08X offset: %08X dirFisic: %08X\n", maquina->registros[codReg], offset, dirFisic);
+        if ((dirFisic < maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].tamano))
             error(maquina, 3); // Error: Overflow de memoria
         else
             for (int i = 0; i < TAM_CELDA; i++)
