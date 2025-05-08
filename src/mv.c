@@ -350,7 +350,7 @@ void setValor(t_operador op, int valor, t_MV *maquina)
         short offsetReg = maquina->registros[codReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
         int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
-        printf("reg: %08X offset: %08X dirFisic: %08X\n", maquina->registros[codReg], offset, dirFisic);
+        // printf("reg: %08X offset: %08X dirFisic: %08X\n", maquina->registros[codReg], offset, dirFisic);
         if ((dirFisic < maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].tamano))
             error(maquina, 3); // Error: Overflow de memoria
         else
