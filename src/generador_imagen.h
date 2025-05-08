@@ -1,3 +1,3 @@
 #include "mv.h"
 
-void generarImagen(t_MV *mv)
+void generarImagen(t_MV *mv);
