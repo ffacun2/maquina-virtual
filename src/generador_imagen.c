@@ -2,7 +2,6 @@
 
 void generarImagen(t_MV *mv)
 {
-    int reg;
     int  descriptor;
     FILE *arch = fopen(mv->nombreVMI, "wb");
     if (arch == NULL)
@@ -19,8 +18,7 @@ void generarImagen(t_MV *mv)
         fwrite(&tam_kib, sizeof(int), 1, arch);
         // Registros 
         for (int i = 0; i < CANT_REGISTROS; i++) {
-         reg = (int) mv->registros[i];
-         fwrite(&reg, sizeof(int), 1, arch);}
+         fwrite(&mv->registros[i], sizeof(int), 1, arch);}
 
     for (int i = 0; i < CANT_SEGMENTOS; i++) {
         descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
