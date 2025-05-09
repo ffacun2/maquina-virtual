@@ -53,9 +53,10 @@ int main(int argc, char **argv)
 
         char **param = argv + i;
         int size_param = argc - i;
+        printf("vmx: %s , vmi: %s\n", mv.nombreVMX, mv.nombreVMI);
 
         // Inicializar la máquina virtual
-        if (mv.nombreVMX != NULL && mv.nombreVMI == NULL && lectura_vmx(&mv, param, size_param))
+        if (mv.nombreVMX != NULL && lectura_vmx(&mv, param, size_param))
         {
             genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
@@ -69,7 +70,6 @@ int main(int argc, char **argv)
             // Si se activa el flag de disassembler, se escribe el disassembler
             escribirDisassembler(instrucciones, instruccion_size);
         }
-
         ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
         free(instrucciones);
         
@@ -120,6 +120,7 @@ int lectura_vmx(t_MV *maquina, char **param, int cant_param)
     }
 
     fread(modelo, sizeof(char), 5, archivo);   // Leo el modelo (VMX25) del archivo
+    modelo[5] = '\0';                       // Aseguro que el modelo sea una cadena de caracteres
     fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
     printf("Modelo: %s, Version: %d\n", modelo, version);
     if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2))

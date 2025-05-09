@@ -1,5 +1,5 @@
 @echo off
-echo Compilando proyecto...\n
+echo Compilando proyecto...
 
 gcc src/*.c -o vmx.exe
 
