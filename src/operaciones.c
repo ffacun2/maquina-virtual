@@ -218,7 +218,7 @@ void SYS(t_MV* maquina, t_operador op1) {
     {
     case 1: // Modo lectura
 
-        switch (maquina->registros[A] & 0xFF) // AL
+        switch (maquina->registros[A] & 0x0FF) // AL
         {
         case 1: // Leer en decimal
             for (i = 0; i < CL; i++)

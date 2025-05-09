@@ -1,8 +1,8 @@
 #include "operaciones.h"
 #include "disassembler.h"
+#include "generador_imagen.h"
 
 int lectura_vmx(t_MV *maquina, char **param, int size_param);
-int lectura_vmi(t_MV *maquina);
 int verifico_tamano(char tamano);
 int verifico_tamano2(short segmento_sizes[]);
 
@@ -225,58 +225,7 @@ int lectura_vmx(t_MV *maquina, char **param, int cant_param)
     return 1;
 }
 
-/*
-    Leo el archivo vmi, primero leo el header para verificar el identificador y la version
-    y luego los datos que iran a la memoria de la maquina virtual. El archivos debe contener
-    todos los datos necesarios para inicializar la maquina virtual. VMI es una imagen de la
-    maquina virtual en un estado determinado.
-    @param mv: puntero a la maquina virtual
-    @return: 1 si la lectura fue exitosa, 0 si hubo un error.
-*/
-int lectura_vmi(t_MV *mv)
-{
-    short high, low;
-    short tamano;
-    char modelo[6];
-    char version;
-    FILE *archivo = fopen(mv->nombreVMI, "rb");
-    int registros[16];
-    int segmentos[8];
 
-    if (archivo == NULL)
-    {
-        printf("Error al abrir el archivo\n");
-        return 0;
-    }
-
-    fread(modelo, sizeof(char), 5, archivo); // Leo el header del archivo
-    modelo[5] = '\0';                        // Aseguro que el header sea una cadena de caracteres
-
-    fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
-
-    if (strcmp(modelo, "VMI25") != 0 || version != 1)
-    {
-        fclose(archivo);
-        return 0;
-    }
-    else
-    {
-        fread(&high, sizeof(char), 1, archivo); // Leo el byte alto del tamaño de datos
-        fread(&low, sizeof(char), 1, archivo);  // Leo el byte bajo del tamaño de datos
-        tamano = ((high << 8) | low);           // armo el tamaño de datos
-        tamano *= 1024;                         // Multiplico por 1024 para pasarlo a bytes
-
-        fread(registros, sizeof(int), 16, archivo); // Leo los registros del archivo
-        // inicializar_registros(mv, registros); // Inicializo los registros de la máquina virtual
-        fread(segmentos, sizeof(int), 8, archivo); // Leo los segmentos del archivo
-        // inicializar_segmentos(mv, segmentos); // Inicializo los segmentos de la máquina virtual
-        char memoria[tamano];
-        fread(memoria, sizeof(char), tamano, archivo); // Leo los datos del archivo
-        // inicializar_memoria(mv, memoria, tamano); // Inicializo la memoria de la máquina virtual
-    }
-    fclose(archivo);
-    return 1;
-}
 
 /*
     Verifico que el tamaño de los datos leidos no sea mayor a el tamaño
