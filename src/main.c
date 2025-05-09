@@ -55,14 +55,13 @@ int main(int argc, char **argv)
         int size_param = argc - i;
 
         // Inicializar la máquina virtual
-        if (mv.nombreVMX != NULL && lectura_vmx(&mv, param, size_param))
+        if (mv.nombreVMX != NULL && mv.nombreVMI == NULL && lectura_vmx(&mv, param, size_param))
         {
             genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
-        else if (mv.nombreVMI != NULL && lectura_vmi(&mv))
+        else if (mv.nombreVMX == NULL && mv.nombreVMI != NULL && lectura_vmi(&mv))
         {
-            // Si se activa el flag de disassembler, se escribe el disassembler
-            // genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
+            genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
 
         if (mv.flag_d && mv.flag_ejecucion)
