@@ -271,6 +271,9 @@ void valor_operacion(t_operador *op, t_MV mv)
     Obtiene el valor de la maquina virutal segun el tipo de operando de la operacion.
     Si el tipo de operando/ sector de registro es invalido se muestra mensaje de error
     y devuelve valor -1.
+    @param op: operando a obtener
+    @param maquina: puntero a la máquina virtual
+    @return: valor del operando
 */
 int getValor(t_operador op, t_MV maquina)
 {
@@ -340,6 +343,9 @@ int getValor(t_operador op, t_MV maquina)
     Establece el valor de un operando en la máquina virtual según su tipo.
     Dependiendo del tipo de operando (MEMORIA, REGISTRO), se actualiza el valor
     en la memoria o en los registros correspondientes.
+    @param op: operando a establecer
+    @param valor: valor a establecer
+    @param maquina: puntero a la máquina virtual
 */
 void setValor(t_operador op, int valor, t_MV *maquina)
 {
@@ -391,6 +397,10 @@ void setValor(t_operador op, int valor, t_MV *maquina)
 /*
     Verifica si el codigo de operacion se encuentra dentro de los disponibles
     En caso de que no se encuentre se lanza -> Error: Operacion no valida y se corta la ejecucion
+    Se tiene en cuenta la version de la maquina virtual para determinar los codigos de operacion validos.
+    @param cod_op: codigo de operacion a verificar
+    @param mv: puntero a la maquina virtual
+    @return: 1 si el codigo de operacion es valido, 0 si no lo es
 */
 int codOperacionValido(int cod_op, t_MV mv)
 {
@@ -409,8 +419,15 @@ int codOperacionValido(int cod_op, t_MV mv)
 
 /*
     Maneja los errores que pueden ocurrir durante la ejecución de la máquina virtual.
-    Dependiendo del código de error, se muestra un mensaje específico y se ajusta el registro IP
-    al final del codigo del code segment para finalizarlo.
+    Dependiendo del código de error, se muestra un mensaje específico y se detiene la ejecución.
+    1: Operacion no valida
+    2: Division por cero
+    3: Falla de segmento
+    4: Memoria insuficiente
+    5: Stack overflow
+    6: Stack underflow
+    @param mv: puntero a la máquina virtual
+    @param errorCode: código de error que indica el tipo de error
 */
 void error(t_MV *mv, int errorCode)
 {
@@ -442,6 +459,11 @@ void error(t_MV *mv, int errorCode)
     de la maquina virtual.
     Este array contiene por cada elemento, el opcode y los operandos (tipo y valor)
     para luego recorrerlo y ejecutar cada instruccion.
+    El tamaño del array de instrucciones es el tamaño del segmento de código. Esto
+    nos permite movernos en el a traves de la IP.
+    @param mv: puntero a la maquina virtual
+    @param instrucciones: puntero a un array de instrucciones
+    @param instruccion_size: puntero a un entero que contiene el tamaño del array de instrucciones
 */
 void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size)
 {
