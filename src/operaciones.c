@@ -210,10 +210,10 @@ void SYS(t_MV* maquina, t_operador op1) {
     // Splitter 1 corta de a bits
     // Splitter 2 corta de a bytes
     t_splitter splitter1, splitter2;
-    splitter1 = constructorSplitter(maquina->registros[A] & 0xFF, 1);
+    splitter1 = constructorSplitter(maquina->registros[A] & 0x0FF, 1);
     getSalidas(splitter1, salidas);
     setTamanio(&splitter2, 8);
-    dirFisica = maquina->tabla_segmentos[(maquina->registros[D] >> 16) & 0xFFFF].base + maquina->registros[D] & 0xFFFF;
+    dirFisica = maquina->tabla_segmentos[(maquina->registros[D] >> 16) & 0xFFFF].base + (maquina->registros[D] & 0x0FFFF);
     switch (op1.valor)
     {
     case 1: // Modo lectura
@@ -331,22 +331,30 @@ void SYS(t_MV* maquina, t_operador op1) {
         }
         break;
 
-    case 3: // String read
+    case 3:{
+        // String read
         printf("[%04X]: ", dirFisica);
-        scanf("%s", str);
+        char string[CX];
+        scanf("%s", string);
         i = 0;
-        while (str[i] != '\0' && i < CX)
+        while (string[i] != '\0' && i < CX)
         {
-            maquina->memoria[maquina->registros[D] + i] = str[i];
+            maquina->memoria[dirFisica + i] = string[i];
             i++;
         }
-        maquina->memoria[maquina->registros[D] + i] = '\0';
+        maquina->memoria[dirFisica + i] = '\0';
+    } 
         break;
-
-    case 4: // String write
-        printf("[%04X]: %s", dirFisica, maquina->memoria[dirFisica]);
+    case 4: {// String write
+        printf("[%04X]: ", dirFisica);
+        i = 0;
+        while (maquina->memoria[dirFisica + i] != '\0')
+        {
+            printf("%c", maquina->memoria[dirFisica + i]);
+            i++;
+        }
+    }    
         break;
-
     case 7: // Clear screen
         // clrscr();
         break;
