@@ -1,5 +1,19 @@
 #include "generador_imagen.h"
 #include <stdint.h>
+void escribir_uint16_be(FILE *f, uint16_t valor) {
+    uint8_t bytes[2];
+    bytes[0] = (valor >> 8) & 0xFF;
+    bytes[1] = valor & 0xFF;
+    fwrite(bytes, 1, 2, f);
+}
+void escribir_uint32_be(FILE *f, uint32_t valor) {
+    uint8_t bytes[4];
+    bytes[0] = (valor >> 24) & 0xFF;
+    bytes[1] = (valor >> 16) & 0xFF;
+    bytes[2] = (valor >> 8) & 0xFF;
+    bytes[3] = valor & 0xFF;
+    fwrite(bytes, 1, 4, f);
+}
 void generarImagen(t_MV *mv)
 {
     uint32_t  descriptor;
@@ -30,20 +44,7 @@ void generarImagen(t_MV *mv)
 
     fclose(arch);}
    }
-    void escribir_uint16_be(FILE *f, uint16_t valor) {
-    uint8_t bytes[2];
-    bytes[0] = (valor >> 8) & 0xFF;
-    bytes[1] = valor & 0xFF;
-    fwrite(bytes, 1, 2, f);
-}
-void escribir_uint32_be(FILE *f, uint32_t valor) {
-    uint8_t bytes[4];
-    bytes[0] = (valor >> 24) & 0xFF;
-    bytes[1] = (valor >> 16) & 0xFF;
-    bytes[2] = (valor >> 8) & 0xFF;
-    bytes[3] = valor & 0xFF;
-    fwrite(bytes, 1, 4, f);
-}
+
     
 /*
     Leo el archivo vmi, primero leo el header para verificar el identificador y la version
