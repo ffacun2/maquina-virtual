@@ -337,7 +337,7 @@ void SYS(t_MV *maquina, t_operador op1)
         // String read
         printf("[%04X]: ", dirFisica);
         char string[CX];
-        scanf("%s", string);
+        fgets(string, CX, stdin);
         i = 0;
         while (string[i] != '\0' && i < CX)
         {
