@@ -200,8 +200,9 @@ void RND(t_MV *maquina, t_operador op1, t_operador op2)
         printf("RDN no admite negativos\n");
 }
 
-void SYS(t_MV* maquina, t_operador op1) {
-    char* str, bin[33], caracter;
+void SYS(t_MV *maquina, t_operador op1)
+{
+    char *str, bin[33], caracter;
     int CX = maquina->registros[C] & 0x0FFFF;
     int CL = maquina->registros[C] & 0x0FF;
     int CH = (maquina->registros[C] >> 8) & 0x0FF;
@@ -331,7 +332,8 @@ void SYS(t_MV* maquina, t_operador op1) {
         }
         break;
 
-    case 3:{
+    case 3:
+    {
         // String read
         printf("[%04X]: ", dirFisica);
         char string[CX];
@@ -343,18 +345,13 @@ void SYS(t_MV* maquina, t_operador op1) {
             i++;
         }
         maquina->memoria[dirFisica + i] = '\0';
-    } 
-        break;
-    case 4: {// String write
-        printf("[%04X]: ", dirFisica);
-        i = 0;
-        while (maquina->memoria[dirFisica + i] != '\0')
-        {
-            printf("%c", maquina->memoria[dirFisica + i]);
-            i++;
-        }
-    }    
-        break;
+    }
+    break;
+    case 4:
+    { // String write
+        printf("[%04X]: %s", dirFisica, maquina->memoria[dirFisica]);
+    }
+    break;
     case 7: // Clear screen
         // clrscr();
         break;
