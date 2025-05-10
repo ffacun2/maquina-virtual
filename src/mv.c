@@ -28,7 +28,7 @@ void inicializar_maquina(t_MV *mv, short int tamano)
     @param segmentos_size: array de tamaños de segmentos [PS, KS, CS, DS, ES, SS]
     @param empty_point: offset del CS hasta el main del codigo assembler
 */
-void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point)
+void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point)
 {
     int seg = 0;
     int base = 0;
@@ -55,9 +55,9 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point)
             }
         }
     }
-    mv->registros[IP] = mv->registros[CS] + empty_point;
+    mv->registros[IP] = mv->registros[CS] + entry_point;
     mv->registros[SP] = mv->registros[SS] + segmentos_size[5];
-    mv->offsetEntryPoint = empty_point;
+    mv->offsetEntryPoint = entry_point;
 }
 
 /*
@@ -315,10 +315,11 @@ int getValor(t_operador op, t_MV maquina)
         short offset = (op.valor >> 8) & 0x0FFFF;
         short data_size = 4 - (op.valor & 0x03); // Extraer el tamaño de los datos (0, 1, 2 o 3 bytes)
         int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
-        
-        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano)) {    
+
+        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano))
+        {
             error(&maquina, 3); // Error: Overflow de memoria
-        }    
+        }
         else
         {
             for (int i = 0; i < data_size; i++)
