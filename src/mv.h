@@ -91,7 +91,7 @@ typedef struct
 } t_instruccion;
 
 void inicializar_maquina(t_MV *MV, short int tamano);
-void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point);
+void inicializar_maquina2(t_MV *mv, short segmentos_size[], int empty_point,int total_memoria,int ptro_vec_param,int cant_param);
 
 // Metodos de inicializacion para archivo vmi
 void inicializo_registros(t_MV *mv, int registros[]);
@@ -99,7 +99,7 @@ void inicializo_segmentos(t_MV *mv, int segmentos[]);
 void inicializo_memoria(t_MV *mv, char memoria[], int size);
 
 // Metodos de carga de version 2 archivo vmx
-int cargoParamSegment(t_MV *mv, char **param, int size);
+void cargoParamSegment(t_MV *mv, char **param, int cant_param,int *ptro_vec_param,int *size_param_segment);
 void cargoCodeSegment(t_MV *mv, char code[], int size);
 void cargoConstSegment(t_MV *mv, char constant[], int size);
 
