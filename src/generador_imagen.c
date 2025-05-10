@@ -2,7 +2,7 @@
 #include <stdint.h>
 void generarImagen(t_MV *mv)
 {
-    int  descriptor;
+    uint32_t  descriptor;
     FILE *arch = fopen(mv->nombreVMI, "wb");
     if (arch == NULL)
     {
@@ -15,14 +15,14 @@ void generarImagen(t_MV *mv)
         uint8_t version = 1;
         fwrite(&version, 1, 1, arch);
         uint16_t tam_kib =(uint16_t) mv->memory_size/ 1024;
-        fwrite(&tam_kib, sizeof(int), 1, arch);
+        escribir_uint16_be(arch, tam_kib); // Tamaño de memoria en Kbytes
         // Registros 
         for (int i = 0; i < CANT_REGISTROS; i++) {
-         fwrite(&mv->registros[i], sizeof(int), 1, arch);}
+         escribir_uint32_be(arch, (uint32_t)mv->registros[i]);
 
     for (int i = 0; i < CANT_SEGMENTOS; i++) {
         descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
-        fwrite(&descriptor, sizeof(int), 1, arch);
+        escribir_uint32_be(arch, descriptor);
     }
 
     // Memoria principal
@@ -30,6 +30,20 @@ void generarImagen(t_MV *mv)
 
     fclose(arch);}
    }
+    void escribir_uint16_be(FILE *f, uint16_t valor) {
+    uint8_t bytes[2];
+    bytes[0] = (valor >> 8) & 0xFF;
+    bytes[1] = valor & 0xFF;
+    fwrite(bytes, 1, 2, f);
+}
+void escribir_uint32_be(FILE *f, uint32_t valor) {
+    uint8_t bytes[4];
+    bytes[0] = (valor >> 24) & 0xFF;
+    bytes[1] = (valor >> 16) & 0xFF;
+    bytes[2] = (valor >> 8) & 0xFF;
+    bytes[3] = valor & 0xFF;
+    fwrite(bytes, 1, 4, f);
+}
     
 /*
     Leo el archivo vmi, primero leo el header para verificar el identificador y la version
