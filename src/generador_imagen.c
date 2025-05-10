@@ -1,5 +1,6 @@
 #include "generador_imagen.h"
 #include <stdint.h>
+
 void escribir_uint16_be(FILE *f, uint16_t valor) {
     uint8_t bytes[2];
     bytes[0] = (valor >> 8) & 0xFF;
@@ -14,6 +15,7 @@ void escribir_uint32_be(FILE *f, uint32_t valor) {
     bytes[3] = valor & 0xFF;
     fwrite(bytes, 1, 4, f);
 }
+
 void generarImagen(t_MV *mv)
 {
     uint32_t  descriptor;
@@ -31,20 +33,15 @@ void generarImagen(t_MV *mv)
         uint16_t tam_kib =(uint16_t) mv->memory_size/ 1024;
         escribir_uint16_be(arch, tam_kib); // Tamaño de memoria en Kbytes
         // Registros 
-        for (int i = 0; i < CANT_REGISTROS; i++) {
-         escribir_uint32_be(arch, (uint32_t)mv->registros[i]);
-
-    for (int i = 0; i < CANT_SEGMENTOS; i++) {
-        descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
-        escribir_uint32_be(arch, descriptor);
-    }
+        for (int i = 0; i < CANT_REGISTROS; i++)
+            escribir_uint32_be(arch, (uint32_t)mv->registros[i]);
 
     // Memoria principal
     fwrite(mv->memoria, 1, mv->memory_size, arch);
 
-    fclose(arch);}
+    fclose(arch);
    }
-
+}
     
 /*
     Leo el archivo vmi, primero leo el header para verificar el identificador y la version
