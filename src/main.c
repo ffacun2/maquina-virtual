@@ -9,7 +9,7 @@ int tamano_total_segmentos(short segmento_sizes[]);
 
 /*
     compilo el programa:
-    gcc main.c mv.c operaciones.c disassembler.c splitter.c -o main.exe
+    gcc main.c mv.c operaciones.c disassembler.c splitter.c generador_imagen.c -o ../vmx.exe
 
     ejecuto el programa con el nombre de archivo traducido:
     main.exe sample.vmx
@@ -108,7 +108,7 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     }
 
     fread(modelo, sizeof(char), 5, archivo);   // Leo el modelo (VMX25) del archivo
-    modelo[5] = '\0';                       // Aseguro que el modelo sea una cadena de caracteres
+    modelo[5] = '\0';                          // Aseguro que el modelo sea una cadena de caracteres
     fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
     printf("Modelo: %s, Version: %d\n", modelo, version);
     if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2)) {
@@ -184,8 +184,6 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     fclose(archivo);
     return 1;
 }
-
-
 
 /*
     Verifico que el tamaño de los datos leidos no sea mayor a el tamaño
