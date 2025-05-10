@@ -1,14 +1,13 @@
 #include "generador_imagen.h"
 #include <stdint.h>
-void escribir_uint16_be(FILE *f, uint16_t valor)
-{
+
+void escribir_uint16_be(FILE* f, uint16_t valor) {
     uint8_t bytes[2];
     bytes[0] = (valor >> 8) & 0xFF;
     bytes[1] = valor & 0xFF;
     fwrite(bytes, 1, 2, f);
 }
-void escribir_uint32_be(FILE *f, uint32_t valor)
-{
+void escribir_uint32_be(FILE* f, uint32_t valor) {
     uint8_t bytes[4];
     bytes[0] = (valor >> 24) & 0xFF;
     bytes[1] = (valor >> 16) & 0xFF;
@@ -16,16 +15,14 @@ void escribir_uint32_be(FILE *f, uint32_t valor)
     bytes[3] = valor & 0xFF;
     fwrite(bytes, 1, 4, f);
 }
-void generarImagen(t_MV *mv)
-{
+
+void generarImagen(t_MV* mv) {
     uint32_t descriptor;
-    FILE *arch = fopen(mv->nombreVMI, "wb");
-    if (arch == NULL)
-    {
+    FILE* arch = fopen(mv->nombreVMI, "wb");
+    if (arch == NULL) {
         printf("Error al abrir el archivo de imagen\n");
     }
-    else
-    {
+    else {
         // Header
         //  Identificador "VMI25"
         fwrite("VMI25", 1, 5, arch);
@@ -33,22 +30,19 @@ void generarImagen(t_MV *mv)
         fwrite(&version, 1, 1, arch);
         uint16_t tam_kib = (uint16_t)mv->memory_size / 1024;
         escribir_uint16_be(arch, tam_kib); // Tamaño de memoria en Kbytes
-        // Registros
+        // Registros 
         for (int i = 0; i < CANT_REGISTROS; i++)
-        {
             escribir_uint32_be(arch, (uint32_t)mv->registros[i]);
 
-            for (int i = 0; i < CANT_SEGMENTOS; i++)
-            {
-                descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
-                escribir_uint32_be(arch, descriptor);
-            }
-
-            // Memoria principal
-            fwrite(mv->memoria, 1, mv->memory_size, arch);
-
-            fclose(arch);
+        for (int i = 0; i < CANT_SEGMENTOS; i++) {
+            descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
+            escribir_uint32_be(arch, descriptor);
         }
+
+        // Memoria principal
+        fwrite(mv->memoria, 1, mv->memory_size, arch);
+
+        fclose(arch);
     }
 }
 
@@ -60,18 +54,16 @@ void generarImagen(t_MV *mv)
     @param mv: puntero a la maquina virtual
     @return: 1 si la lectura fue exitosa, 0 si hubo un error.
 */
-int lectura_vmi(t_MV *mv)
-{
+int lectura_vmi(t_MV* mv) {
     short high, low;
     short tamano;
     char modelo[6];
     char version;
-    FILE *archivo = fopen(mv->nombreVMI, "rb");
+    FILE* archivo = fopen(mv->nombreVMI, "rb");
     int registros[16];
     int segmentos[8];
 
-    if (archivo == NULL)
-    {
+    if (archivo == NULL) {
         printf("Error al abrir el archivo\n");
         return 0;
     }
@@ -81,13 +73,11 @@ int lectura_vmi(t_MV *mv)
 
     fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
 
-    if (strcmp(modelo, "VMI25") != 0 || version != 1)
-    {
+    if (strcmp(modelo, "VMI25") != 0 || version != 1) {
         fclose(archivo);
         return 0;
     }
-    else
-    {
+    else {
         fread(&high, sizeof(char), 1, archivo); // Leo el byte alto del tamaño de datos
         fread(&low, sizeof(char), 1, archivo);  // Leo el byte bajo del tamaño de datos
         tamano = ((high << 8) | low);           // armo el tamaño de datos
