@@ -1,13 +1,13 @@
 #include "generador_imagen.h"
 #include <stdint.h>
 
-void escribir_uint16_be(FILE *f, uint16_t valor) {
+void escribir_uint16_be(FILE* f, uint16_t valor) {
     uint8_t bytes[2];
     bytes[0] = (valor >> 8) & 0xFF;
     bytes[1] = valor & 0xFF;
     fwrite(bytes, 1, 2, f);
 }
-void escribir_uint32_be(FILE *f, uint32_t valor) {
+void escribir_uint32_be(FILE* f, uint32_t valor) {
     uint8_t bytes[4];
     bytes[0] = (valor >> 24) & 0xFF;
     bytes[1] = (valor >> 16) & 0xFF;
@@ -16,33 +16,36 @@ void escribir_uint32_be(FILE *f, uint32_t valor) {
     fwrite(bytes, 1, 4, f);
 }
 
-void generarImagen(t_MV *mv)
-{
-    uint32_t  descriptor;
-    FILE *arch = fopen(mv->nombreVMI, "wb");
-    if (arch == NULL)
-    {
+void generarImagen(t_MV* mv) {
+    uint32_t descriptor;
+    FILE* arch = fopen(mv->nombreVMI, "wb");
+    if (arch == NULL) {
         printf("Error al abrir el archivo de imagen\n");
     }
-    else{
-        //Header 
-        // Identificador "VMI25"
+    else {
+        // Header
+        //  Identificador "VMI25"
         fwrite("VMI25", 1, 5, arch);
         uint8_t version = 1;
         fwrite(&version, 1, 1, arch);
-        uint16_t tam_kib =(uint16_t) mv->memory_size/ 1024;
+        uint16_t tam_kib = (uint16_t)mv->memory_size / 1024;
         escribir_uint16_be(arch, tam_kib); // Tamaño de memoria en Kbytes
         // Registros 
         for (int i = 0; i < CANT_REGISTROS; i++)
             escribir_uint32_be(arch, (uint32_t)mv->registros[i]);
 
-    // Memoria principal
-    fwrite(mv->memoria, 1, mv->memory_size, arch);
+        for (int i = 0; i < CANT_SEGMENTOS; i++) {
+            descriptor = (mv->tabla_segmentos[i].base << 16) | (mv->tabla_segmentos[i].tamano & 0xFFFF);
+            escribir_uint32_be(arch, descriptor);
+        }
 
-    fclose(arch);
-   }
+        // Memoria principal
+        fwrite(mv->memoria, 1, mv->memory_size, arch);
+
+        fclose(arch);
+    }
 }
-    
+
 /*
     Leo el archivo vmi, primero leo el header para verificar el identificador y la version
     y luego los datos que iran a la memoria de la maquina virtual. El archivos debe contener
