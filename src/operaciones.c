@@ -336,8 +336,8 @@ void SYS(t_MV *maquina, t_operador op1)
     {
         // String read
         printf("[%04X]: ", dirFisica);
-        char string[CX];
-        fgets(string, CX, stdin);
+        char string[CX + 1];
+        fgets(string, CX + 1, stdin);
         i = 0;
         while (string[i] != '\n' && i < CX)
         {
