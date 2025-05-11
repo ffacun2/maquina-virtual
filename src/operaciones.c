@@ -339,7 +339,7 @@ void SYS(t_MV *maquina, t_operador op1)
         char string[CX];
         fgets(string, CX, stdin);
         i = 0;
-        while (string[i] != '\0' && i < CX)
+        while (string[i] != '\n' && i < CX)
         {
             maquina->memoria[dirFisica + i] = string[i];
             i++;
