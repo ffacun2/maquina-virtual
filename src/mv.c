@@ -28,7 +28,7 @@ void inicializar_maquina(t_MV *mv, short int tamano)
     @param segmentos_size: array de tamaños de segmentos [PS, KS, CS, DS, ES, SS]
     @param empty_point: offset del CS hasta el main del codigo assembler
 */
-void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point,int total_memoria,int ptro_vec_param,int cant_param)
+void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point, int total_memoria, int ptro_vec_param, int cant_param)
 {
     int seg = 0;
     int base = 0;
@@ -39,7 +39,7 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point,int 
         if (segmentos_size[i] > 0)
         {
             mv->tabla_segmentos[seg].base = base;
-            mv->tabla_segmentos[seg].tamano = base + segmentos_size[i];
+            mv->tabla_segmentos[seg].tamano = segmentos_size[i];
             if (i > 0)
             {
                 mv->registros[reg[i - 1]] = seg << 16;
@@ -60,20 +60,22 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point,int 
     mv->offsetEntryPoint = entry_point;
     mv->memory_size = total_memoria;
 
-    if (cant_param > 0) {
+    if (cant_param > 0)
+    {
         // Guardar la dirección de los parámetros en la pila
-        pushValor(mv, ptro_vec_param); 
+        pushValor(mv, ptro_vec_param);
         // Guardar la cantidad de  parámetros en la pila
-        pushValor(mv, cant_param); 
-        //representa el RET del main que seria posicion fuera del code segment
+        pushValor(mv, cant_param);
+        // representa el RET del main que seria posicion fuera del code segment
         pushValor(mv, -1);
     }
-    else {
+    else
+    {
         // Guardar la dirección de los parámetros en la pila
-        pushValor(mv, -1); 
+        pushValor(mv, -1);
         // Guardar la cantidad de  parámetros en la pila
-        pushValor(mv, 0); 
-        //representa el RET del main que seria posicion fuera del code segment
+        pushValor(mv, 0);
+        // representa el RET del main que seria posicion fuera del code segment
         pushValor(mv, -1);
     }
 }
@@ -130,14 +132,14 @@ void inicializo_memoria(t_MV *mv, char memoria[], int size)
     @param param: array de strings que representan los parámetros
     @param size: tamaño del array de parámetros
 */
-void cargoParamSegment(t_MV *mv, char **param, int cant_param,int *ptro_vec_param,int *size_param_segment)
+void cargoParamSegment(t_MV *mv, char **param, int cant_param, int *ptro_vec_param, int *size_param_segment)
 {
     int posicionamiento = 0;
     int vec_param[cant_param];
-    
+
     // Vector de punteros a los parametros, guardo el offset al primer elemento 0x0000 0xxx
     *ptro_vec_param = 0x00000000;
-    
+
     // Guardo en memoria los parametros
     for (int i = 0; i < cant_param; i++)
     {
@@ -160,7 +162,7 @@ void cargoParamSegment(t_MV *mv, char **param, int cant_param,int *ptro_vec_para
         mv->memoria[posicionamiento + 3] = (vec_param[i] & 0x0FF);
         posicionamiento += 4;
     }
-    
+
     // retorno el tamaño del segmento de parametros
     *size_param_segment = posicionamiento;
 }
