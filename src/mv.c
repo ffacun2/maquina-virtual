@@ -387,12 +387,13 @@ void setValor(t_operador op, int valor, t_MV *maquina)
         int base = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base;
         int tam = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].tamano;
         int dirFisic = base + offsetReg + offset;
-        if ((dirFisic < base) || ((dirFisic + 4) > base + tam))
+        int tamano = TAM_CELDA - (maquina->version == 2) * (op.valor & 3);
+        if ((dirFisic < base) || ((dirFisic + tamano - 1) > base + tam))
             error(maquina, 3); // Error: Overflow de memoria
         else
-            for (int i = 0; i < TAM_CELDA; i++)
+            for (int i = 0; i < tamano; i++)
             {
-                maquina->memoria[dirFisic + i] = (valor >> ((3 - i) * 8)) & 0x000000FF;
+                maquina->memoria[dirFisic + i] = (valor >> ((tamano - 1 - i) * 8)) & 0x000000FF;
             }
     }
     break;
