@@ -516,7 +516,7 @@ void popValor(t_MV *maquina, int *valor)
     int ss_selector = (maquina->registros[SS] >> 16) & 0x0FFFF;
     int direccion_fisica = calcularDireccionFisica(*maquina, ((maquina->registros[SS] >> 16) & 0x0FFFF), (maquina->registros[SP] & 0x0FFFF));
 
-    if (direccion_fisica > maquina->tabla_segmentos[ss_selector].tamano)
+    if (direccion_fisica > maquina->tabla_segmentos[ss_selector].base + maquina->tabla_segmentos[ss_selector].tamano)
     {
         error(maquina, 6); // Error: Stack Underflow
     }
