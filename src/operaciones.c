@@ -385,7 +385,7 @@ void Salto(t_MV *mv, t_operador op1)
 {                                                                                      // FUNCION QUE EJECUTA EL SALTO DE TODAS LAS FUNCIONES JUMP
     int valor = getValor(op1, *mv);                                                    // El valor del operando es la direccion logica a la que queremos saltar         // Extraer offset (los 16 bits bajos)
     short pos = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base + valor; // Verificar que esté dentro del segmento de codigo
-    short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
+    short size = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base + mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
     // printf("valor salto: %04X, posicion:%04X, size:%04X\n", valor, pos, size);
 
     if (pos > size)
@@ -514,9 +514,11 @@ void popValor(t_MV *maquina, int *valor)
 {
     // printf("Popeando valor: %d\n",valor);
     int ss_selector = (maquina->registros[SS] >> 16) & 0x0FFFF;
+    int base = maquina->tabla_segmentos[ss_selector].base;
+    int tam = maquina->tabla_segmentos[ss_selector].tamano;
     int direccion_fisica = calcularDireccionFisica(*maquina, ((maquina->registros[SS] >> 16) & 0x0FFFF), (maquina->registros[SP] & 0x0FFFF));
 
-    if (direccion_fisica > maquina->tabla_segmentos[ss_selector].tamano)
+    if (direccion_fisica > base + tam)
     {
         error(maquina, 6); // Error: Stack Underflow
     }

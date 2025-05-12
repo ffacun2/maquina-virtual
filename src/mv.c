@@ -339,9 +339,11 @@ int getValor(t_operador op, t_MV maquina)
         short offsetReg = maquina.registros[codigoReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
         short data_size = 4 - (op.valor & 0x03); // Extraer el tamaño de los datos (0, 1, 2 o 3 bytes)
-        int dirFisic = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
+        int base = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base;
+        int tam = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano;
+        int dirFisic = base + offsetReg + offset;
 
-        if ((dirFisic < maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano))
+        if ((dirFisic < base) || ((dirFisic + 4) > (base + tam)))
         {
             error(&maquina, 3); // Error: Overflow de memoria
         }
@@ -382,9 +384,10 @@ void setValor(t_operador op, int valor, t_MV *maquina)
         short codReg = (op.valor >> 4) & 0x000F;
         short offsetReg = maquina->registros[codReg] & 0x0FFFF;
         short offset = (op.valor >> 8) & 0x0FFFF;
-        int dirFisic = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base + offsetReg + offset;
-        // printf("reg: %08X offset: %08X dirFisic: %08X\n", maquina->registros[codReg], offset, dirFisic);
-        if ((dirFisic < maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base) || ((dirFisic + 4) > maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].tamano))
+        int base = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].base;
+        int tam = maquina->tabla_segmentos[(maquina->registros[codReg] >> 16) & 0x0FFFF].tamano;
+        int dirFisic = base + offsetReg + offset;
+        if ((dirFisic < base) || ((dirFisic + 4) > base + tam))
             error(maquina, 3); // Error: Overflow de memoria
         else
             for (int i = 0; i < TAM_CELDA; i++)
@@ -494,7 +497,7 @@ void error(t_MV *mv, int errorCode)
 void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size)
 {
     // obtengo el tamaño del segmento de código
-    short size_code = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano - mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
+    unsigned short size_code = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
     // Asigna memoria para las instrucciones
     *instrucciones = malloc(sizeof(t_instruccion) * size_code);
 
@@ -511,7 +514,7 @@ void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *in
         *instruccion_size = size_code;                    // Tamaño del segmento de código
 
         mv->registros[IP] = mv->registros[IP] & 0xFFFF0000;
-        while (dirFisic < mv->tabla_segmentos[index].tamano)
+        while (dirFisic < (mv->tabla_segmentos[index].base + mv->tabla_segmentos[index].tamano))
         {
             // Leer la instrucción de la memoria
             char instruccion = mv->memoria[dirFisic];

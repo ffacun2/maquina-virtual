@@ -179,6 +179,7 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             cargoCodeSegment(maquina, code, tamanio_segmentos[2]);
             // Cargo el segmento de constantes en la memoria de la máquina virtual
             cargoConstSegment(maquina, constant, tamanio_segmentos[1]);
+
         }
     }
     fclose(archivo);
