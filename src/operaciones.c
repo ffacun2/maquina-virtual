@@ -3,7 +3,6 @@
 #include "operaciones.h"
 #include "mv.h"
 #include "splitter.h"
-#include <conio.h>
 #include "generador_imagen.h"
 
 // A la hora de hacer operaciones, se trabaja con short, el tamaño maximo es 16bits
@@ -353,8 +352,14 @@ void SYS(t_MV *maquina, t_operador op1)
         printf("[%04X]: %s", dirFisica, &maquina->memoria[dirFisica]);
     }
     break;
-    case 7: // Clear screen
-        clrscr();
+    case 7:                            // Clear screen
+#if defined(_WIN32) || defined(_WIN64) // Windows
+        system("cls");
+#else
+            // ANSI escape codes (Linux/macOS)
+        printf("\033[2J\033[H");
+        fflush(stdout);
+#endif
         break;
 
     case 0xF: // Breakpoint
