@@ -354,7 +354,7 @@ void SYS(t_MV *maquina, t_operador op1)
     }
     break;
     case 7: // Clear screen
-        // clrscr();
+        clrscr();
         break;
 
     case 0xF: // Breakpoint
