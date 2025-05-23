@@ -367,7 +367,7 @@ void SYS(t_MV *maquina, t_operador op1)
         generarImagen(maquina);
         printf("[BREAKPOINT] Imagen guardada en '%s'\n", maquina->nombreVMI);
         printf("Acciones: (g) continuar | (Enter) paso a paso | (q) abortar\n> ");
-        scanf("%c", &caracter);
+        caracter = getchar();
         switch (caracter)
         {
         case 'g': // go
