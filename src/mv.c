@@ -9,8 +9,7 @@
     @param mv: puntero a la máquina virtual
     @param tamano: tamaño del segmento de codigo
 */
-void inicializar_maquina(t_MV *mv, short int tamano)
-{
+void inicializar_maquina(t_MV* mv, short int tamano) {
     mv->registros[CS] = 0x00000000;
     mv->registros[DS] = 0x00010000;
     mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base = 0;
@@ -28,29 +27,23 @@ void inicializar_maquina(t_MV *mv, short int tamano)
     @param segmentos_size: array de tamaños de segmentos [PS, KS, CS, DS, ES, SS]
     @param empty_point: offset del CS hasta el main del codigo assembler
 */
-void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point, int total_memoria, int ptro_vec_param, int cant_param)
-{
+void inicializar_maquina2(t_MV* mv, short segmentos_size[], int entry_point, int total_memoria, int ptro_vec_param, int cant_param) {
     int seg = 0;
     int base = 0;
-    int reg[] = {KS, CS, DS, ES, SS};
+    int reg[] = { KS, CS, DS, ES, SS };
 
-    for (int i = 0; i < 6; i++)
-    {
-        if (segmentos_size[i] > 0)
-        {
+    for (int i = 0; i < 6; i++) {
+        if (segmentos_size[i] > 0) {
             mv->tabla_segmentos[seg].base = base;
             mv->tabla_segmentos[seg].tamano = segmentos_size[i];
-            if (i > 0)
-            {
+            if (i > 0) {
                 mv->registros[reg[i - 1]] = seg << 16;
             }
             base += segmentos_size[i];
             seg++;
         }
-        else
-        {
-            if (i > 0)
-            {
+        else {
+            if (i > 0) {
                 mv->registros[reg[i - 1]] = null;
             }
         }
@@ -60,8 +53,7 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point, int
     mv->offsetEntryPoint = entry_point;
     mv->memory_size = total_memoria;
 
-    if (cant_param > 0)
-    {
+    if (cant_param > 0) {
         // Guardar la dirección de los parámetros en la pila
         pushValor(mv, ptro_vec_param);
         // Guardar la cantidad de  parámetros en la pila
@@ -69,8 +61,7 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point, int
         // representa el RET del main que seria posicion fuera del code segment
         pushValor(mv, -1);
     }
-    else
-    {
+    else {
         // Guardar la dirección de los parámetros en la pila
         pushValor(mv, -1);
         // Guardar la cantidad de  parámetros en la pila
@@ -86,10 +77,8 @@ void inicializar_maquina2(t_MV *mv, short segmentos_size[], int entry_point, int
     @param mv: puntero a la máquina virtual
     @param registros: array con todos los valores de los registros de la mv
 */
-void inicializo_registros(t_MV *mv, int registros[])
-{
-    for (int i = 0; i < CANT_REGISTROS; i++)
-    {
+void inicializo_registros(t_MV* mv, int registros[]) {
+    for (int i = 0; i < CANT_REGISTROS; i++) {
         mv->registros[i] = registros[i];
     }
 }
@@ -100,10 +89,8 @@ void inicializo_registros(t_MV *mv, int registros[])
     @param mv: puntero a la máquina virtual
     @param segmentos: array con todos los valores de los segmentos de la mv
 */
-void inicializo_segmentos(t_MV *mv, int segmentos[])
-{
-    for (int i = 0; i < CANT_SEGMENTOS; i++)
-    {
+void inicializo_segmentos(t_MV* mv, int segmentos[]) {
+    for (int i = 0; i < CANT_SEGMENTOS; i++) {
         mv->tabla_segmentos[i].base = (segmentos[i] >> 16) & 0x0000FFFF;
         mv->tabla_segmentos[i].tamano = segmentos[i] & 0x0000FFFF;
     }
@@ -116,10 +103,8 @@ void inicializo_segmentos(t_MV *mv, int segmentos[])
     @param memoria: array con todos los valores de la memoria de la mv
     @param size: tamaño de la memoria
 */
-void inicializo_memoria(t_MV *mv, char memoria[], int size)
-{
-    for (int i = 0; i < size; i++)
-    {
+void inicializo_memoria(t_MV* mv, char memoria[], int size) {
+    for (int i = 0; i < size; i++) {
         mv->memoria[i] = memoria[i];
     }
 }
@@ -132,8 +117,7 @@ void inicializo_memoria(t_MV *mv, char memoria[], int size)
     @param param: array de strings que representan los parámetros
     @param size: tamaño del array de parámetros
 */
-void cargoParamSegment(t_MV *mv, char **param, int cant_param, int *ptro_vec_param, int *size_param_segment)
-{
+void cargoParamSegment(t_MV* mv, char** param, int cant_param, int* ptro_vec_param, int* size_param_segment) {
     int posicionamiento = 0;
     int vec_param[cant_param];
 
@@ -141,11 +125,9 @@ void cargoParamSegment(t_MV *mv, char **param, int cant_param, int *ptro_vec_par
     *ptro_vec_param = 0x00000000;
 
     // Guardo en memoria los parametros
-    for (int i = 0; i < cant_param; i++)
-    {
+    for (int i = 0; i < cant_param; i++) {
         vec_param[i] = posicionamiento;
-        for (int j = 0; j < strlen(param[i]); j++)
-        {
+        for (int j = 0; j < strlen(param[i]); j++) {
             mv->memoria[posicionamiento] = param[i][j];
             posicionamiento++;
         }
@@ -154,8 +136,7 @@ void cargoParamSegment(t_MV *mv, char **param, int cant_param, int *ptro_vec_par
     }
     *ptro_vec_param += posicionamiento;
     // Guardo en memoria la direccion de cada parametro
-    for (int i = 0; i < cant_param; i++)
-    {
+    for (int i = 0; i < cant_param; i++) {
         mv->memoria[posicionamiento] = 0x00;
         mv->memoria[posicionamiento + 1] = 0x00;
         mv->memoria[posicionamiento + 2] = (vec_param[i] >> 16) & 0x0FF;
@@ -175,15 +156,12 @@ void cargoParamSegment(t_MV *mv, char **param, int cant_param, int *ptro_vec_par
     @param constant: array de constantes a cargar
     @param size: tamaño del array de constantes
 */
-void cargoConstSegment(t_MV *mv, char constant[], int size)
-{
-    if (size == 0)
-    {
+void cargoConstSegment(t_MV* mv, char constant[], int size) {
+    if (size == 0) {
         return; // Si el tamaño es cero, no hay nada que cargar
     }
     int base = mv->tabla_segmentos[(mv->registros[KS] >> 16) & 0x0FFFF].base;
-    for (int i = base; i < (base + size); i++)
-    {
+    for (int i = base; i < (base + size); i++) {
         mv->memoria[i] = constant[i - base];
     }
 }
@@ -196,15 +174,12 @@ void cargoConstSegment(t_MV *mv, char constant[], int size)
     @param code: array de código a cargar
     @param size: tamaño del array de código
 */
-void cargoCodeSegment(t_MV *mv, char code[], int size)
-{
-    if (size == 0)
-    {
+void cargoCodeSegment(t_MV* mv, char code[], int size) {
+    if (size == 0) {
         return; // Si el tamaño es cero, no hay nada que cargar
     }
     int base = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].base;
-    for (int i = base; i < (base + size); i++)
-    {
+    for (int i = base; i < (base + size); i++) {
         mv->memoria[i] = code[i - base];
     }
 }
@@ -217,23 +192,23 @@ void cargoCodeSegment(t_MV *mv, char code[], int size)
     @param instrucciones: array de instrucciones a ejecutar
     @param instruccion_size: tamaño del array de instrucciones
 */
-void ejecutar_maquina(t_MV *mv, t_instruccion *instrucciones, int instruccion_size)
-{
+void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_size) {
     t_func0 t_func0[2];
     t_func1 t_func1[14];
     t_func2 t_func2[15];
     int posicion = 0;
+
     // Para llamar a breakpoint
     t_operador op;
     op.tipo = INMEDIATO;
-    op.valor = 0xF;
+    op.valor = 0x0F;
 
     // Inicializa los vectores de funciones
     inicializo_vector_op(t_func0, t_func1, t_func2);
     // Inicializa el registro IP con la dirección del segmento de código
     mv->registros[IP] = mv->registros[CS] + mv->offsetEntryPoint;
-    while (mv->flag_ejecucion && ((mv->registros[IP] & 0x0FFFF) < instruccion_size))
-    {
+
+    while (mv->flag_ejecucion && ((mv->registros[IP] & 0x0FFFF) < instruccion_size)) {
         posicion = mv->registros[IP] & 0x0FFFF;
         mv->registros[IP] += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1; // Actualiza la posición en el array de instrucciones
 
@@ -244,12 +219,11 @@ void ejecutar_maquina(t_MV *mv, t_instruccion *instrucciones, int instruccion_si
                 t_func1[(instrucciones[posicion].opcode & 0x01F)](mv, instrucciones[posicion].op2);
             else
                 t_func2[(instrucciones[posicion].opcode & 0x01F) - 16](mv, instrucciones[posicion].op1, instrucciones[posicion].op2);
-
         // Breakpoint
-        if (mv->flag_breakpoint)
-        {
+        if (mv->flag_breakpoint && instrucciones[posicion].op1.valor != 0x0F && (instrucciones[posicion].opcode & 0x1F)!= 0x0F) {
             SYS(mv, op);
         }
+
     }
 }
 
@@ -260,14 +234,12 @@ void ejecutar_maquina(t_MV *mv, t_instruccion *instrucciones, int instruccion_si
     Registro -> 1 byte
     Todo esto es parte del archivo leido, es del code segment.
 */
-void valor_operacion(t_operador *op, t_MV mv)
-{
+void valor_operacion(t_operador* op, t_MV mv) {
     short index = (mv.registros[IP] >> 16) & 0x000000FF;      // Extraer el índice del segmento
     short offset = mv.registros[IP] & 0x0000FFFF;             // Extraer el offset
     short dirFisic = mv.tabla_segmentos[index].base + offset; // Calcular la dirección física
     op->valor = 0;                                            // Inicializar el valor del operando a 0
-    switch (op->tipo)
-    {
+    switch (op->tipo) {
     case MEMORIA:
         op->valor = mv.memoria[dirFisic] & 0x0FF;
         op->valor <<= 8;
@@ -300,19 +272,16 @@ void valor_operacion(t_operador *op, t_MV mv)
     @param maquina: puntero a la máquina virtual
     @return: valor del operando
 */
-int getValor(t_operador op, t_MV maquina)
-{
+int getValor(t_operador op, t_MV maquina) {
     int valor = 0;
-    switch (op.tipo)
-    {
+    switch (op.tipo) {
     case REGISTRO:
     {
         // Extraer el sector del registro( EAX=00, AL=01, AH=10, AX=11)
         short sectorReg = (op.valor & 0x000C) >> 2;
         short codigoReg = (op.valor & 0x00F0) >> 4; // Extraer el registro
 
-        switch (sectorReg)
-        {
+        switch (sectorReg) {
         case 0: // EAX XXXX
             return maquina.registros[codigoReg];
         case 1: // AL 000X
@@ -343,14 +312,11 @@ int getValor(t_operador op, t_MV maquina)
         int tam = maquina.tabla_segmentos[(maquina.registros[codigoReg] >> 16) & 0x0FFFF].tamano;
         int dirFisic = base + offsetReg + offset;
 
-        if ((dirFisic < base) || ((dirFisic + data_size - 1) > (base + tam)))
-        {
+        if ((dirFisic < base) || ((dirFisic + data_size - 1) > (base + tam))) {
             error(&maquina, 3); // Error: Overflow de memoria
         }
-        else
-        {
-            for (int i = 0; i < data_size; i++)
-            {
+        else {
+            for (int i = 0; i < data_size; i++) {
                 valor <<= 8;
                 valor |= (maquina.memoria[dirFisic + i] & 0x0FF);
             }
@@ -375,10 +341,8 @@ int getValor(t_operador op, t_MV maquina)
     @param valor: valor a establecer
     @param maquina: puntero a la máquina virtual
 */
-void setValor(t_operador op, int valor, t_MV *maquina)
-{
-    switch (op.tipo)
-    {
+void setValor(t_operador op, int valor, t_MV* maquina) {
+    switch (op.tipo) {
     case MEMORIA:
     {
         short codReg = (op.valor >> 4) & 0x000F;
@@ -391,8 +355,7 @@ void setValor(t_operador op, int valor, t_MV *maquina)
         if ((dirFisic < base) || ((dirFisic + tamano - 1) > base + tam))
             error(maquina, 3); // Error: Overflow de memoria
         else
-            for (int i = 0; i < tamano; i++)
-            {
+            for (int i = 0; i < tamano; i++) {
                 maquina->memoria[dirFisic + i] = (valor >> ((tamano - 1 - i) * 8)) & 0x000000FF;
             }
     }
@@ -401,8 +364,7 @@ void setValor(t_operador op, int valor, t_MV *maquina)
     {
         short sectorReg = (op.valor & 0x000C) >> 2;
         short codigoReg = (op.valor & 0x00F0) >> 4;
-        switch (sectorReg)
-        {
+        switch (sectorReg) {
         case 0: // EAX XXXX
             maquina->registros[codigoReg] = valor;
             break;
@@ -432,15 +394,12 @@ void setValor(t_operador op, int valor, t_MV *maquina)
     @param mv: puntero a la maquina virtual
     @return: 1 si el codigo de operacion es valido, 0 si no lo es
 */
-int codOperacionValido(int cod_op, t_MV mv)
-{
-    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || cod_op == 0x0F) && mv.version == 1)
-    {
+int codOperacionValido(int cod_op, t_MV mv) {
+    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || cod_op == 0x0F) && mv.version == 1) {
         error(&mv, 1);
         return 0;
     }
-    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || (cod_op >= 0x0B && cod_op <= 0x0D) || (cod_op >= 0x0E && cod_op <= 0x0F)) && mv.version == 2)
-    {
+    if (!((cod_op >= 0x10 && cod_op <= 0x1E) || (cod_op >= 0x00 && cod_op <= 0x08) || (cod_op >= 0x0B && cod_op <= 0x0D) || (cod_op >= 0x0E && cod_op <= 0x0F)) && mv.version == 2) {
         error(&mv, 1);
         return 0;
     }
@@ -459,10 +418,8 @@ int codOperacionValido(int cod_op, t_MV mv)
     @param mv: puntero a la máquina virtual
     @param errorCode: código de error que indica el tipo de error
 */
-void error(t_MV *mv, int errorCode)
-{
-    switch (errorCode)
-    {
+void error(t_MV* mv, int errorCode) {
+    switch (errorCode) {
     case 1:
         printf("Error: Operacion no valida.\n");
         break;
@@ -495,28 +452,24 @@ void error(t_MV *mv, int errorCode)
     @param instrucciones: puntero a un array de instrucciones
     @param instruccion_size: puntero a un entero que contiene el tamaño del array de instrucciones
 */
-void genero_array_instrucciones(t_MV *mv, t_instruccion **instrucciones, int *instruccion_size)
-{
+void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* instruccion_size) {
     // obtengo el tamaño del segmento de código
     unsigned short size_code = mv->tabla_segmentos[(mv->registros[CS] >> 16) & 0x0FFFF].tamano;
     // Asigna memoria para las instrucciones
     *instrucciones = malloc(sizeof(t_instruccion) * size_code);
 
-    if (*instrucciones == NULL)
-    {
+    if (*instrucciones == NULL) {
         printf("Error al asignar memoria para el disassembler\n");
         return;
     }
-    else
-    {
+    else {
         short index = (mv->registros[IP] >> 16) & 0x0FFFF; // Extraer el índice del segmento
         short offset;
         short dirFisic = mv->tabla_segmentos[index].base; // Calcular la dirección física
         *instruccion_size = size_code;                    // Tamaño del segmento de código
 
         mv->registros[IP] = mv->registros[IP] & 0xFFFF0000;
-        while (dirFisic < (mv->tabla_segmentos[index].base + mv->tabla_segmentos[index].tamano))
-        {
+        while (dirFisic < (mv->tabla_segmentos[index].base + mv->tabla_segmentos[index].tamano)) {
             // Leer la instrucción de la memoria
             char instruccion = mv->memoria[dirFisic];
 

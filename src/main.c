@@ -47,7 +47,6 @@ int main(int argc, char** argv) {
 
         char** param = argv + i;
         int size_param = argc - i;
-        printf("vmx: %s , vmi: %s\n", mv.nombreVMX, mv.nombreVMI);
 
         // Inicializar la máquina virtual
         if (mv.nombreVMX != NULL && lectura_vmx(&mv, param, size_param)) {
@@ -59,8 +58,9 @@ int main(int argc, char** argv) {
 
         if (mv.flag_d && mv.flag_ejecucion) {
             // Si se activa el flag de disassembler, se escribe el disassembler
-            escribirDisassembler(mv,instrucciones, instruccion_size);
+            escribirDisassembler(mv, instrucciones, instruccion_size);
         }
+
         ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
         free(instrucciones);
 
@@ -110,7 +110,6 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     fread(modelo, sizeof(char), 5, archivo);   // Leo el modelo (VMX25) del archivo
     modelo[5] = '\0';                          // Aseguro que el modelo sea una cadena de caracteres
     fread(&version, sizeof(char), 1, archivo); // Leo la version del archivo
-    printf("Modelo: %s, Version: %d\n", modelo, version);
     if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2)) {
         fclose(archivo);
         maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
@@ -162,10 +161,10 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
             fread(constant, sizeof(char), tamanio_segmentos[1], archivo);
 
             // Cargo el semento de parametros en la memoria de la máquina virtual
-            cargoParamSegment(maquina, param, cant_param,&ptro_vec_param,&size_param);
+            cargoParamSegment(maquina, param, cant_param, &ptro_vec_param, &size_param);
 
             tamanio_segmentos[0] = size_param;
-            
+
             if (verifico_tamano2(tamanio_segmentos) == 0) {
                 fclose(archivo);
                 maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
@@ -173,7 +172,7 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
                 return 0;
             }
 
-            inicializar_maquina2(maquina, tamanio_segmentos, (header[16] << 8) | (header[17] & 0x0FF),tamano_total_segmentos(tamanio_segmentos),ptro_vec_param,cant_param); // Inicializo la máquina virtual
+            inicializar_maquina2(maquina, tamanio_segmentos, (header[16] << 8) | (header[17] & 0x0FF), tamano_total_segmentos(tamanio_segmentos), ptro_vec_param, cant_param); // Inicializo la máquina virtual
 
             // Cargo el segmento de código en la memoria de la máquina virtual
             cargoCodeSegment(maquina, code, tamanio_segmentos[2]);

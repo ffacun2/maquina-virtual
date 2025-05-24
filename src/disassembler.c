@@ -171,7 +171,9 @@ void imprimir_operador(t_operador operador) {
 }
 
 void escribirDisassembler(t_MV mv, t_instruccion *t_instrucciones, int tamano) {
-    escribirConstantes(mv);
+    if (mv.registros[KS] != -1)
+        escribirConstantes(mv);
+
     escribirInstrucciones(mv,t_instrucciones,tamano);
 }
 
@@ -209,7 +211,7 @@ void escribirConstantes (t_MV mv) {
 
     while (dirFisica < (base + mv.tabla_segmentos[index].tamano) ){
         posicion = dirFisica;
-        printf("[%04X]",posicion);
+        printf(" [%04X]",posicion);
         while (dirFisica < (base + mv.tabla_segmentos[index].tamano) && mv.memoria[dirFisica] != '\0') {
             printf("%02X ",mv.memoria[dirFisica]);
             dirFisica++;
