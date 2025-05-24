@@ -169,11 +169,22 @@ void imprimir_operador(t_operador operador) {
         break;
     }
 }
-// revisar valores negativosss
-void escribirDisassembler(t_instruccion* instrucciones, int tamano) {
-    int posicion = 0;
 
+void escribirDisassembler(t_MV mv, t_instruccion *t_instrucciones, int tamano) {
+    escribirConstantes(mv);
+    escribirInstrucciones(mv,t_instrucciones,tamano);
+}
+
+void escribirInstrucciones(t_MV mv,t_instruccion* instrucciones, int tamano) {
+    int posicion = 0;
     while (posicion < tamano) {
+        
+        if(mv.version == 2 )
+            if ( mv.offsetEntryPoint == posicion)
+                printf(">");
+            else
+                printf(" ");
+
         printf("[%04X] %02X ", posicion, instrucciones[posicion].opcode & 0x0FF);
         imprime_byte(instrucciones[posicion].op2.valor, instrucciones[posicion].op2.tipo);
         imprime_byte(instrucciones[posicion].op1.valor, instrucciones[posicion].op1.tipo);
@@ -187,5 +198,23 @@ void escribirDisassembler(t_instruccion* instrucciones, int tamano) {
         imprimir_operador(instrucciones[posicion].op2);
         printf("\n");
         posicion += instrucciones[posicion].op1.tipo + instrucciones[posicion].op2.tipo + 1;
+    }
+}
+
+void escribirConstantes (t_MV mv) {
+    int index = (mv.registros[KS] >> 16) & 0x0FFFF;
+    int base = mv.tabla_segmentos[index].base;
+    int dirFisica = mv.tabla_segmentos[index].base;
+    int posicion;
+
+    while (dirFisica < (base + mv.tabla_segmentos[index].tamano) ){
+        posicion = dirFisica;
+        printf("[%04X]",posicion);
+        while (dirFisica < (base + mv.tabla_segmentos[index].tamano) && mv.memoria[dirFisica] != '\0') {
+            printf("%02X ",mv.memoria[dirFisica]);
+            dirFisica++;
+        }
+        dirFisica++;
+        printf("00\t | \"%s\"\n",&mv.memoria[posicion]);
     }
 }

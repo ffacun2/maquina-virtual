@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
         if (mv.flag_d && mv.flag_ejecucion) {
             // Si se activa el flag de disassembler, se escribe el disassembler
-            escribirDisassembler(instrucciones, instruccion_size);
+            escribirDisassembler(mv,instrucciones, instruccion_size);
         }
         ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
         free(instrucciones);
