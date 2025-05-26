@@ -4,9 +4,9 @@
 <h2>&#128100 Sobre nosotros</h2>
 Los nombres y usuarios de Github de los integrantes del grupo 0A son:
 <ul>
-  <li>CRIADO, Facundo (@ffacun2)</li>
-  <li>EFSTRATIADIS, Carlos Andrés (@carluandraster)</li>
-  <li>FINOCCHIO, Fausto (@FaustoFi77)</li>
+  <li>CRIADO, Facundo</li>
+  <li>EFSTRATIADIS, Carlos Andrés</li>
+  <li>FINOCCHIO, Fausto</li>
 </ul>
 
 <h2>&#128366 Manual de uso</h2>
