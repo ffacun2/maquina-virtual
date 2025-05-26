@@ -18,7 +18,8 @@ Los nombres y usuarios de Github de los integrantes del grupo 0A son:
 <h2>&#128193 Contenido del repositorio</h2>
 El archivo comprimido contiene:
 <ul>
-  <li>La máquina virtual ejecutable mv.exe</li>
+  <li>La máquina virtual ejecutable vmx.exe</li>
+  <li>El debugger</li>
   <li>Todo el código fuente dentro de la carpeta src</li>
   <li>Las especificaciones, tanto de la máquina virtual como de su código Assembler</li>
 </ul>
