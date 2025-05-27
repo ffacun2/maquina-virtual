@@ -178,6 +178,7 @@ void escribirDisassembler(t_MV mv, t_instruccion *t_instrucciones, int tamano) {
 }
 
 void escribirInstrucciones(t_MV mv,t_instruccion* instrucciones, int tamano) {
+    int base = mv.tabla_segmentos[(mv.registros[CS] >> 16) & 0x0FFFF].base;
     int posicion = 0;
     while (posicion < tamano) {
         
@@ -187,7 +188,7 @@ void escribirInstrucciones(t_MV mv,t_instruccion* instrucciones, int tamano) {
             else
                 printf(" ");
 
-        printf("[%04X] %02X ", posicion, instrucciones[posicion].opcode & 0x0FF);
+        printf("[%04X] %02X ", base+posicion, instrucciones[posicion].opcode & 0x0FF);
         imprime_byte(instrucciones[posicion].op2.valor, instrucciones[posicion].op2.tipo);
         imprime_byte(instrucciones[posicion].op1.valor, instrucciones[posicion].op1.tipo);
         for (int j = 0; j < (7 - instrucciones[posicion].op1.tipo - instrucciones[posicion].op2.tipo); j++) {

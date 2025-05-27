@@ -79,7 +79,7 @@ void inicializar_maquina2(t_MV* mv, short segmentos_size[], int entry_point, int
 */
 void inicializo_registros(t_MV* mv, int registros[]) {
     for (int i = 0; i < CANT_REGISTROS; i++) {
-        mv->registros[i] = registros[i];
+        mv->registros[i] = (registros[i] << 24) | ((registros[i] << 8) & 0x00FF0000) | ((registros[i] >> 8) & 0x0FF00) | ((registros[i] >> 24)&0x0FF);
     }
 }
 
@@ -90,9 +90,14 @@ void inicializo_registros(t_MV* mv, int registros[]) {
     @param segmentos: array con todos los valores de los segmentos de la mv
 */
 void inicializo_segmentos(t_MV* mv, int segmentos[]) {
+    int tamano;
+    int base;
     for (int i = 0; i < CANT_SEGMENTOS; i++) {
-        mv->tabla_segmentos[i].base = (segmentos[i] >> 16) & 0x0000FFFF;
-        mv->tabla_segmentos[i].tamano = segmentos[i] & 0x0000FFFF;
+        tamano = (segmentos[i] >> 16) & 0x0000FFFF;
+        base = segmentos[i] & 0x0000FFFF;
+
+        mv->tabla_segmentos[i].tamano = ((tamano & 0x00FF) << 8) | ((tamano >> 8) & 0x0FF);
+        mv->tabla_segmentos[i].base = ((base & 0x00FF) << 8) | ((base >> 8) & 0x0FF);
     }
 }
 
@@ -206,7 +211,7 @@ void ejecutar_maquina(t_MV* mv, t_instruccion* instrucciones, int instruccion_si
     // Inicializa los vectores de funciones
     inicializo_vector_op(t_func0, t_func1, t_func2);
     // Inicializa el registro IP con la dirección del segmento de código
-    mv->registros[IP] = mv->registros[CS] + mv->offsetEntryPoint;
+    // mv->registros[IP] = mv->registros[CS] + mv->offsetEntryPoint;
 
     while (mv->flag_ejecucion && ((mv->registros[IP] & 0x0FFFF) < instruccion_size)) {
         posicion = mv->registros[IP] & 0x0FFFF;
@@ -319,6 +324,13 @@ int getValor(t_operador op, t_MV maquina) {
             for (int i = 0; i < data_size; i++) {
                 valor <<= 8;
                 valor |= (maquina.memoria[dirFisic + i] & 0x0FF);
+            }
+            if (data_size == 1) {
+                valor = (valor << 24) >> 24; // Sign extend para 1 byte
+            } else if (data_size == 2) {
+                valor = (valor << 16) >> 16; // Sign extend para 2 bytes
+            } else if (data_size == 3) {
+                valor = (valor << 8) >> 8; // Sign extend para 3 bytes
             }
         }
         return valor;
@@ -463,6 +475,7 @@ void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* in
         return;
     }
     else {
+        int backupIP = mv->registros[IP]; // Respaldo del registro IP
         short index = (mv->registros[IP] >> 16) & 0x0FFFF; // Extraer el índice del segmento
         short offset;
         short dirFisic = mv->tabla_segmentos[index].base; // Calcular la dirección física
@@ -494,5 +507,6 @@ void genero_array_instrucciones(t_MV* mv, t_instruccion** instrucciones, int* in
             offset = mv->registros[IP] & 0x0FFFF;
             dirFisic = mv->tabla_segmentos[index].base + offset;
         }
+        mv->registros[IP] = backupIP; // Restaurar el registro IP
     }
 }

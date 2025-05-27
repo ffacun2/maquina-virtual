@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
             genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
         else if (mv.nombreVMX == NULL && mv.nombreVMI != NULL && lectura_vmi(&mv)) {
+            printf("VMI");
             genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
 
@@ -113,7 +114,6 @@ int lectura_vmx(t_MV* maquina, char** param, int cant_param) {
     if (strcmp(modelo, "VMX25") != 0 || (version != 1 && version != 2)) {
         fclose(archivo);
         maquina->flag_ejecucion = 0; // Desactivo la ejecución de la máquina virtual
-        printf("Aca");
         return 0;
     }
     else {

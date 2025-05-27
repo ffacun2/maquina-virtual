@@ -82,14 +82,15 @@ int lectura_vmi(t_MV* mv) {
         fread(&low, sizeof(char), 1, archivo);  // Leo el byte bajo del tamaño de datos
         tamano = ((high << 8) | low);           // armo el tamaño de datos
         tamano *= 1024;                         // Multiplico por 1024 para pasarlo a bytes
-
+        
         fread(registros, sizeof(int), 16, archivo); // Leo los registros del archivo
-        // inicializar_registros(mv, registros); // Inicializo los registros de la máquina virtual
+        inicializo_registros(mv, registros); // Inicializo los registros de la máquina virtual
         fread(segmentos, sizeof(int), 8, archivo); // Leo los segmentos del archivo
-        // inicializar_segmentos(mv, segmentos); // Inicializo los segmentos de la máquina virtual
+        inicializo_segmentos(mv, segmentos); // Inicializo los segmentos de la máquina virtual
         char memoria[tamano];
         fread(memoria, sizeof(char), tamano, archivo); // Leo los datos del archivo
-        // inicializar_memoria(mv, memoria, tamano); // Inicializo la memoria de la máquina virtual
+        inicializo_memoria(mv, memoria, tamano); // Inicializo la memoria de la máquina virtual
+
     }
     fclose(archivo);
     return 1;
