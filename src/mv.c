@@ -431,24 +431,25 @@ int codOperacionValido(int cod_op, t_MV mv) {
     @param errorCode: código de error que indica el tipo de error
 */
 void error(t_MV* mv, int errorCode) {
+    printf("Error en la instruccion [%0X]: ", mv->registros[IP]);
     switch (errorCode) {
     case 1:
-        printf("Error: Operacion no valida.\n");
+        printf("Operacion no valida.\n");
         break;
     case 2:
-        printf("Error: Division por cero.\n");
+        printf("Division por cero.\n");
         break;
     case 3:
-        printf("Error: Falla de segmento.\n");
+        printf("Falla de segmento.\n");
         break;
     case 4:
-        printf("Error: Memoria insuficiente\n");
+        printf("Memoria insuficiente\n");
         break;
     case 5:
-        printf("Error: Stack overflow\n");
+        printf("Stack overflow\n");
         break;
     case 6:
-        printf("Error: Stack underflow\n");
+        printf("Stack underflow\n");
     }
     mv->flag_ejecucion = 0;
 }
