@@ -431,7 +431,9 @@ int codOperacionValido(int cod_op, t_MV mv) {
     @param errorCode: código de error que indica el tipo de error
 */
 void error(t_MV* mv, int errorCode) {
-    printf("Error en la instruccion [%0X]: ", mv->registros[IP]);
+    int segmento = mv->registros[IP]>>16;
+    int offset = mv->registros[IP] & 0xFFFF;
+    printf("Error en la instruccion [%04X]: ", calcularDireccionFisica(*mv,segmento,offset));
     switch (errorCode) {
     case 1:
         printf("Operacion no valida.\n");
