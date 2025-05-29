@@ -354,6 +354,7 @@ int getValor(t_operador op, t_MV maquina) {
     @param maquina: puntero a la máquina virtual
 */
 void setValor(t_operador op, int valor, t_MV* maquina) {
+    // printf("tipo:%d %04X %04X\n",op.tipo,op.valor, valor);
     switch (op.tipo) {
     case MEMORIA:
     {

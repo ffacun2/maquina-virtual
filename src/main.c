@@ -53,16 +53,27 @@ int main(int argc, char** argv) {
             genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
         else if (mv.nombreVMX == NULL && mv.nombreVMI != NULL && lectura_vmi(&mv)) {
-            printf("VMI");
             genero_array_instrucciones(&mv, &instrucciones, &instruccion_size);
         }
 
+        
+        
+        
         if (mv.flag_d && mv.flag_ejecucion) {
             // Si se activa el flag de disassembler, se escribe el disassembler
             escribirDisassembler(mv, instrucciones, instruccion_size);
         }
 
         ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
+        for (int i = 0; i < 16; i++)
+        {
+            printf("registro %d: %08X\n",i,mv.registros[i]);
+        }
+
+        for (int i = 0; i < 8; i++)
+        {
+            printf("base:%04X   tam:%04X \n",mv.tabla_segmentos[i].base,mv.tabla_segmentos[i].tamano);
+        }
         free(instrucciones);
 
 
