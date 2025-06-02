@@ -65,15 +65,6 @@ int main(int argc, char** argv) {
         }
 
         ejecutar_maquina(&mv, instrucciones, instruccion_size); // Ejecutar la máquina virtual
-        for (int i = 0; i < 16; i++)
-        {
-            printf("registro %d: %08X\n",i,mv.registros[i]);
-        }
-
-        for (int i = 0; i < 8; i++)
-        {
-            printf("base:%04X   tam:%04X \n",mv.tabla_segmentos[i].base,mv.tabla_segmentos[i].tamano);
-        }
         free(instrucciones);
 
 
